@@ -14,6 +14,15 @@ To compile it, use the command `make swat`. You can change the output directory 
 In general, the original source codes should be maintained in a folder that only `SUDO` can modify, except for file copying.
 Use only symbolic links to connect to those folders. 
 
+## Docker
+
+Run the model in a docker container with below steps:
+
+```
+docker build -t watdev/intmod
+docker run -it watdev/intmod bash
+```
+
 ## Project
 
 This activity is part of the WATDEV project: Climate Smart WATer Management and Sustainable DEVelopment for Food and Agriculture in East Africa

@@ -727,25 +727,25 @@ C-------------------------------------------------------------------
         END IF   ! VSH
         
 !       VSH summary.csv header
-        IF (FMOPT == 'C') THEN
+!         IF (FMOPT == 'C') THEN
             
-!           CALL CsvOutSumOpsum(RUN, TRTNUM, ROTNO, ROTOPT, CRPNO, CROP,
-            CALL CsvOutSumOpsum(RUN, TRTNUM, ROTNO, ROTOPT, REPNO, CROP,
-     &MODEL, CONTROL%FILEX(1:8), TITLET, FLDNAM, WSTAT,WYEAR,SLNO,YRSIM,
-     &YRPLT, EDAT, ADAT, MDAT, YRDOY, DWAP, CWAM, HWAM, HWAH, BWAH, 
-!     &PWAM, HWUM, HNUMUM, HIAM, LAIX, HNUMAM, IRNUM, IRCM, PRCM, ETCM,
-     &PWAM, HWUM, HNUMUM, HIAM, LAIX, HNUMAM, FCWAM, FHWAM, HWAHF, 
-     &FBWAH, FPWAM, IRNUM, IRCM, PRCM, ETCM,
-     &EPCM, ESCM, ROCM, DRCM, SWXM, NINUMM, NICM, NFXM, NUCM, NLCM, 
-     &NIAM, NMINC, CNAM, GNAM, N2OEC, PINUMM, PICM, PUPC, SPAM, KINUMM, 
-     &KICM, KUPC, SKAM, RECM, ONTAM, ONAM, OPTAM, OPAM, OCTAM, OCAM, 
-     &CO2EC, DMPPM, DMPEM, DMPTM, DMPIM, YPPM, YPEM, YPTM, YPIM, DPNAM, 
-     &DPNUM, YPNAM, YPNUM, NDCH, TMAXA, TMINA, SRADA, DAYLA, CO2A, 
-     &PRCP, ETCP, ESCP, EPCP,   
-     &vCsvlineSumOpsum, vpCsvlineSumOpsum, vlngthSumOpsum) 
+! !           CALL CsvOutSumOpsum(RUN, TRTNUM, ROTNO, ROTOPT, CRPNO, CROP,
+!             CALL CsvOutSumOpsum(RUN, TRTNUM, ROTNO, ROTOPT, REPNO, CROP,
+!      &MODEL, CONTROL%FILEX(1:8), TITLET, FLDNAM, WSTAT,WYEAR,SLNO,YRSIM,
+!      &YRPLT, EDAT, ADAT, MDAT, YRDOY, DWAP, CWAM, HWAM, HWAH, BWAH, 
+! !     &PWAM, HWUM, HNUMUM, HIAM, LAIX, HNUMAM, IRNUM, IRCM, PRCM, ETCM,
+!      &PWAM, HWUM, HNUMUM, HIAM, LAIX, HNUMAM, FCWAM, FHWAM, HWAHF, 
+!      &FBWAH, FPWAM, IRNUM, IRCM, PRCM, ETCM,
+!      &EPCM, ESCM, ROCM, DRCM, SWXM, NINUMM, NICM, NFXM, NUCM, NLCM, 
+!      &NIAM, NMINC, CNAM, GNAM, N2OEC, PINUMM, PICM, PUPC, SPAM, KINUMM, 
+!      &KICM, KUPC, SKAM, RECM, ONTAM, ONAM, OPTAM, OPAM, OCTAM, OCAM, 
+!      &CO2EC, DMPPM, DMPEM, DMPTM, DMPIM, YPPM, YPEM, YPTM, YPIM, DPNAM, 
+!      &DPNUM, YPNAM, YPNUM, NDCH, TMAXA, TMINA, SRADA, DAYLA, CO2A, 
+!      &PRCP, ETCP, ESCP, EPCP,   
+!      &vCsvlineSumOpsum, vpCsvlineSumOpsum, vlngthSumOpsum) 
             
-            CALL LinklstSumOpsum(vCsvlineSumOpsum) 
-        END IF
+!             CALL LinklstSumOpsum(vCsvlineSumOpsum) 
+!         END IF
                 
       ENDIF
 C-------------------------------------------------------------------
@@ -1147,3 +1147,4 @@ C-----------------------------------------------------------------------
       END SUBROUTINE EvaluateDat
 
 C=======================================================================
+ 

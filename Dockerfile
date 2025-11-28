@@ -6,11 +6,12 @@ LABEL org.opencontainers.image.source="https://github.com/nfmsu/Integrated_model
 ENV DEBIAN_FRONTEND=noninteractive
 ENV MODDIR=/modeller3/WATDEV/TOOLBOX
 
-ARG SWAT_URL="https://swat.tamu.edu/media/116330/swat-modflow3.zip"
+ARG SWAT_VERSION="v1.1.3"
+ARG DSSAT_VERSION="v4.8.0.15"
 
 # === Install dependencies ===
 RUN set -eux; \
-    apt-get update && apt-get install -y libgfortran4 git wget unzip rsync ca-certificates; \
+    apt-get update && apt-get install -y libgfortran4 git wget unzip rsync ca-certificates build-essential gfortran cmake vim sed; \
     rm -rf /var/lib/apt/lists/*
 
 #    apt-get update && apt-get install -y --no-install-recommends \
@@ -19,11 +20,12 @@ RUN set -eux; \
 # === Clone required internal and external repositories (to keep the sym links operational) ===
 RUN set -eux; \
     git clone https://github.com/watdev-eu/Integrated_models ${MODDIR}; \
-    git clone --depth 1 https://github.com/DSSAT/dssat-csm-os.git ${MODDIR}/SourceCode_dssat-csm-os-master_v4.8; \
-    wget -O /tmp/swat.zip "${SWAT_URL}"; \
-    unzip -q /tmp/swat.zip "*SourceCode/*" -d "${MODDIR}"; \
-    mv "${MODDIR}/SourceCode" "${MODDIR}/SourceCodeSM_V3"; \
-    rm -f /tmp/swat.zip;   
+    git clone --depth 1 --branch ${DSSAT_VERSION} https://github.com/DSSAT/dssat-csm-os.git ${MODDIR}/SourceCode_dssat-csm-os-master_v4.8; \
+    git clone --depth 1 --branch ubuntu-compat https://github.com/pvgenuchten/SWAT-MODFLOW3 /tmp/swat; \
+    mv /tmp/swat/src "${MODDIR}/SourceCodeSM_V3"; \
+    mkdir -p "${MODDIR}/EGYPT/NEW2/TxtInOut"; \
+    sed -i -e 's/albedo/albedo_swat/g' "${MODDIR}/SWAT/albedo.f"; \
+    rm -Rf /tmp/swat;   
 
 WORKDIR ${MODDIR}
 

@@ -40,7 +40,7 @@ SWAT.DLL = libswat.so
 EVENT.DIR := ../event/
 LIB.DIR = lib/
 BIN.DIR = bin/
-RUN.DIR=/modeller3/WATDEV/TOOLBOX/EGYPT/NEW2/TxtInOut/
+RUN.DIR=/modeller3/WATDEV/TOOLBOX/model/TxtInOut/
 #RUN2.DIR=/modeller3/WATDEV/TOOLBOX/KOGA/NEW2/TxtInOut/
 #RUN3.DIR=INPUT_SWAT/
 EVENT.DLL = libevent.so
@@ -204,8 +204,8 @@ swat: $(MODOBJ) $(OBJ)
 	$(FC) $(FFLAGS) $(MODOBJ) $(OBJ) -o $(SWAT.OUT)
 #	$(CP) $(SWAT.OUT) $(BIN.DIR)
 	$(CP) $(SWAT.OUT) $(RUN.DIR)
-	$(CP) $(SWAT.OUT) $(RUN2.DIR)
-	$(CP) $(SWAT.OUT) $(RUN3.DIR)
+#	$(CP) $(SWAT.OUT) $(RUN2.DIR)
+#	$(CP) $(SWAT.OUT) $(RUN3.DIR)
 #	$(CP) *.mod $(LIB.DIR)
 
 swatdll: $(MODOBJ2) $(OBJ)

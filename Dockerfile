@@ -14,21 +14,24 @@ RUN set -eux; \
     apt-get update && apt-get install -y libgfortran4 git wget unzip rsync ca-certificates build-essential gfortran cmake vim sed; \
     rm -rf /var/lib/apt/lists/*
 
-#    apt-get update && apt-get install -y --no-install-recommends \
-#        build-essential gfortran cmake git pkg-config wget unzip rsync ca-certificates \
-
-# === Clone required internal and external repositories (to keep the sym links operational) ===
 RUN set -eux; \
-    git clone https://github.com/watdev-eu/Integrated_models ${MODDIR}; \
-    git clone --depth 1 --branch ${DSSAT_VERSION} https://github.com/DSSAT/dssat-csm-os.git ${MODDIR}/SourceCode_dssat-csm-os-master_v4.8; \
-    git clone --depth 1 --branch ubuntu-compat https://github.com/pvgenuchten/SWAT-MODFLOW3 /tmp/swat; \
+    # clone local repository (to keep the sym links operational) 
+    git clone -b initial-docker https://github.com/watdev-eu/Integrated_models ${MODDIR}; \
+    # requires specific version compatible with swat
+    git clone --depth 1 -b ${DSSAT_VERSION} https://github.com/DSSAT/dssat-csm-os.git ${MODDIR}/SourceCode_dssat-csm-os-master_v4.8; \
+    # use forked fixed version (until PR lands)
+    git clone --depth 1 -b ubuntu-compat https://github.com/pvgenuchten/SWAT-MODFLOW3 /tmp/swat; \
     mv /tmp/swat/src "${MODDIR}/SourceCodeSM_V3"; \
-    mkdir -p "${MODDIR}/EGYPT/NEW2/TxtInOut"; \
-    sed -i -e 's/albedo/albedo_swat/g' "${MODDIR}/SWAT/albedo.f"; \
+    # prepare bin output folder
+    mkdir -p "${MODDIR}/bin"; \
+    # initialise error file
+    echo "" > "${MODDIR}/bin/MODEL.ERR"; \
+    # resolve name conflict 
+    sed -i -e 's/albedo/albedo_swat/g' "${MODDIR}/SWAT/albedo.f";  \ 
     rm -Rf /tmp/swat;   
 
 WORKDIR ${MODDIR}
 
-# RUN make swat -- this does not work yet, so running manual
+RUN make swat 
 
 CMD ["/bin/bash"]

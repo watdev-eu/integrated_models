@@ -4,3 +4,5 @@ Placeholder folder for the model input content, this folder should be replaced b
 docker build -t watdev/integrated-model .
 docker run -v $(pwd)/SIM253_RES:/modeller3/WATDEV/TOOLBOX/model -it watdev/integrated-model /bin/bash
 ```
+
+Plus some extra files needed in the bin folder, originate from https://github.com/DSSAT/dssat-csm-os/tree/master/Data/StandardData

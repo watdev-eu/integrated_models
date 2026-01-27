@@ -30,8 +30,15 @@ RUN set -eux; \
     sed -i -e 's/albedo/albedo_swat/g' "${MODDIR}/SWAT/albedo.f";  \ 
     rm -Rf /tmp/swat;   
 
+ENV PATH="/modeller3/WATDEV/TOOLBOX/bin/:${PATH}"
+
 WORKDIR ${MODDIR}
 
 RUN make swat 
+
+RUN set -eux; \
+    mkdir -p "/model";
+
+WORKDIR /model
 
 CMD ["/bin/bash"]

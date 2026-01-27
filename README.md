@@ -2,7 +2,7 @@
 
 This repository contains code to integrate 3 models for agricultural decision support.
 
-## Run the code on your local machines (Linux)
+## Run the code on local machines (Linux)
  
 To run the code, please copy the original [DSSAT code](https://github.com/DSSAT/dssat-csm-os) to your local machine and update the symbolic links in the repository to match the corresponding directories on your local system.
 
@@ -16,21 +16,29 @@ Use only symbolic links to connect to those folders.
 
 ## Docker
 
-Above steps are prepared in [Dockerfile](./Dockerfile). Build the container with:
+Run model from Github Container Registry.
+Navigate a shell to the TxtInOut folder and run:
+
+```
+docker run -it -v $(pwd):/model ghcr.io/watdev-eu/integrated_models bash
+```
+
+Or build and run the container locally with:
 
 ```
 docker build -t watdev/intmod
-```
-
-Run a shell in the container with below step:
-
-```
 docker run -it -v $(pwd):/model watdev/intmod bash
 ```
 
-On the container, try `make swat` to build and run `/modeller3/WATDEV/TOOLBOX/bin/swat`
+On the container, run the model with:
 
-Some comments
+```
+cd /model
+swat
+```
+
+## Notes
+
 - clone the repo inside container (do not copy in files) else symlinks get broken
 - many errors when running on recent ubunty with libgfortran5 -> downgraded to 18 libgfortran 4
 - use zip file from https://swat.tamu.edu/software/swat-modflow/, because it includes many modules

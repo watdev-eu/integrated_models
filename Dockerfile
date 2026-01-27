@@ -2,7 +2,7 @@
 # FROM debian:stable-slim
 FROM ubuntu:18.04
 
-LABEL org.opencontainers.image.source="https://github.com/watdev-eu/Integrated_models"
+LABEL org.opencontainers.image.source="https://github.com/watdev-eu/integrated_models"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV MODDIR=/modeller3/WATDEV/TOOLBOX
 
@@ -16,7 +16,7 @@ RUN set -eux; \
 
 RUN set -eux; \
     # clone local repository (to keep the sym links operational) 
-    git clone -b initial-docker https://github.com/watdev-eu/Integrated_models ${MODDIR}; \
+    git clone -b main https://github.com/watdev-eu/integrated_models ${MODDIR}; \
     # requires specific version compatible with swat
     git clone --depth 1 -b ${DSSAT_VERSION} https://github.com/DSSAT/dssat-csm-os.git ${MODDIR}/SourceCode_dssat-csm-os-master_v4.8; \
     # use forked fixed version (until PR lands)

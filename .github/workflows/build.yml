@@ -1,27 +1,30 @@
-name: Build and publish Docker image to GHCR
+name: Build and Publish Docker Image on Tag
 
-# Run on pushes to main (change branch as needed) and on manual dispatch
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    # Only run this workflow when pushing tags
+    tags:
+      - '*'      
 
-# Allow this workflow to push packages
 permissions:
-  contents: read       # needed for checkout
-  packages: write      # needed to push to GHCR
-  id-token: write      # optional, useful if you later use OIDC flows
+  contents: read      # needed for checkout
+  packages: write     # needed to push to GHCR
+  id-token: write     # useful for OIDC if needed
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # fetch full history so tags are accessible
 
-      - name: Set up QEMU (for cross-build support)
+      - name: Set up QEMU (for multi-arch builds)
         uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
@@ -34,20 +37,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract tag name
+        id: tag
+        run: |
+          echo "TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
       - name: Build and push image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: |
+            ${{ env.IMAGE }}:${{ env.TAG }}
             ${{ env.IMAGE }}:latest
-            ${{ env.IMAGE }}:${{ github.sha }}
-          # optionally enable build cache; comment/uncomment if you maintain cache registry
-          # cache-from: type=registry,ref=${{ env.IMAGE }}:cache
-          # cache-to: type=registry,ref=${{ env.IMAGE }}:cache,mode=max
 
-      - name: Image info
+      - name: Output image info
         run: |
-          echo "Image pushed:"
+          echo "Published image:"
+          echo " - ${{ env.IMAGE }}:${{ env.TAG }}"
           echo " - ${{ env.IMAGE }}:latest"
-          echo " - ${{ env.IMAGE }}:${{ github.sha }}"

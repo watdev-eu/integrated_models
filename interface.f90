@@ -1103,7 +1103,7 @@ TYPE(ControlType) CONTROL
 TYPE(SwitchType) ISWITCH
 TYPE(FloodWatType) FLOODWAT
 
-write(*,*)'interface_MGM,i=',i
+!write(*,*)'interface_MGM,i=',i
 interface_ihru=ihru
 j=interface_ihru
 CALL GET(Plant_Interface)
@@ -2745,7 +2745,7 @@ SOILPROP=SOILPROP_NEW(ihru)
 CALL PUT(SOILPROP)
 if(SUM(SOILPROP%DLAYR)==0)THEN
 write(*,*)'BEFORE INterface_LAND,SUM(SOILPROP%DLAYR)=',SUM(SOILPROP%DLAYR),'interface_ihru=',interface_ihru,'ihru',ihru
-write(*,*)SOILPROP_NEW(ihru)%DLAYR
+!write(*,*)SOILPROP_NEW(ihru)%DLAYR
 STOP
 END IF
 !	IF(ihru==1)THEN
@@ -2778,7 +2778,7 @@ CALL GET(SOILPROP)
 SOILPROP_NEW(interface_ihru)=SOILPROP
 if(SUM(SOILPROP%DLAYR)==0)THEN
 write(*,*)'MIDDLE INterface_LAND,SUM(SOILPROP%DLAYR)=',SUM(SOILPROP%DLAYR),'interface_ihru=',interface_ihru,'ihru',ihru
-write(*,*)SOILPROP_NEW(ihru)%DLAYR
+!write(*,*)SOILPROP_NEW(ihru)%DLAYR
 STOP
 END IF
 
@@ -2818,14 +2818,14 @@ CALL GET(PlantI)
 !INTEGRATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !write(*,*)'INTERFACE_LAND,BEFORE,INTEG,SOILPROP=',SOILPROP%DLAYR
-write(*,*)'To Land, INTEGR,i=',i
+!write(*,*)'To Land, INTEGR,i=',i
 CALL LAND(CONTROL_NEW(ihru),ISWITCH,YRPLT,MDATE,YREND)
 
 
 SOILPROP_NEW(interface_ihru)=SOILPROP
 if(SUM(SOILPROP%DLAYR)==0)THEN
 write(*,*)'After INterface_LAND,SUM(SOILPROP%DLAYR)=',SUM(SOILPROP%DLAYR),'interface_ihru=',interface_ihru,'ihru',ihru
-write(*,*)SOILPROP_NEW(ihru)%DLAYR
+!write(*,*)SOILPROP_NEW(ihru)%DLAYR
 STOP
 END IF
 
@@ -2936,7 +2936,7 @@ IF(yr_skip(interface_ihru)==1)PLANTING_DSSAT(interface_ihru)=17
 
 
 
-write(*,*)'Interface_LAND,iida=',iida,'daynumber=',day_number
+!write(*,*)'Interface_LAND,iida=',iida,'daynumber=',day_number
 
 
 END SUBROUTINE interface_LAND
@@ -3072,7 +3072,7 @@ END IF
 !      SWDEF  = MAX(0.0,(WET1 - (TSWTOP)))                 ! old, upper limit for automatic irrigation does not work
       SWDEF  = MAX(0.0,((WET1*THETAU*0.01) - TSWTOP))
 	IF(SWDEF<0)THEN
-write(*,*)'interface_WATBAL,SWDEF=',SWDEF
+!write(*,*)'interface_WATBAL,SWDEF=',SWDEF
 STOP
 END IF
 RETURN

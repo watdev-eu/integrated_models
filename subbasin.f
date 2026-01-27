@@ -640,15 +640,15 @@
 				
 				!if(ihru==1)STOP
 	
-				write(*,*)'subbasin,to interface_LAND,i=',i	
+				!write(*,*)'subbasin,to interface_LAND,i=',i	
 				if(iida>21.AND.i==21)STOP
 				call interface_LAND(iida)
-				write(*,*)'subbasin,iida=',iida,'i=',i	
+				!write(*,*)'subbasin,iida=',iida,'i=',i	
 				PLANTING_DSSAT(ihru)=0
 				!! check for dormancy
 				!if (igro(j) == 1) call dormant
 				if(igro(j) ==1) call interface_dormant
-       				write(*,*)'subbasin,iida=',iida
+       				!write(*,*)'subbasin,iida=',iida
 	
 				!! compute actual ET for day in HRU
 				etday = ep_day + es_day + canev
@@ -705,7 +705,7 @@
 				ELSE
 					STOP
 				END IF
-				       write(*,*)'subbasin,LOPPU,iida=',iida,'i=',i
+				       !write(*,*)'subbasin,LOPPU,iida=',iida,'i=',i
 
 			ELSE
 				! Model land cycle utilizing individual subroutines from DSSAT side

@@ -2626,7 +2626,7 @@ if(present(FILEE))THEN
 FILEE=TRIM(CROP)//TRIM(BEGIN)
 !FILEE='COGRO048.ECO'
 END IF
-PATHCR='/mnt/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/'
+PATHCR='/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/'
 IF(present(PATHEC))THEN
 PATHEC=PATHCR
 END IF

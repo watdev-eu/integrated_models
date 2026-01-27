@@ -25,16 +25,17 @@ docker build -t watdev/intmod
 Run a shell in the container with below step:
 
 ```
-docker run -it watdev/intmod bash
+docker run -it -v $(pwd):/model watdev/intmod bash
 ```
 
-On the container, try `make swat` to build and run `./EGYPT/swat > test_run_1.log  2>&1 &`
+On the container, try `make swat` to build and run `/modeller3/WATDEV/TOOLBOX/bin/swat`
 
 Some comments
 - clone the repo inside container (do not copy in files) else symlinks get broken
 - many errors when running on recent ubunty with libgfortran5 -> downgraded to 18 libgfortran 4
 - use zip file from https://swat.tamu.edu/software/swat-modflow/, because it includes many modules
 
+File `interface.f90` has at line 2629 a path reference to a path where the DSSAT config parameters are located
 
 ## Project
 

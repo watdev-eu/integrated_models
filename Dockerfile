@@ -2,7 +2,7 @@
 # FROM debian:stable-slim
 FROM ubuntu:18.04
 
-LABEL org.opencontainers.image.source="https://github.com/nfmsu/Integrated_models"
+LABEL org.opencontainers.image.source="https://github.com/watdev-eu/Integrated_models"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV MODDIR=/modeller3/WATDEV/TOOLBOX
 

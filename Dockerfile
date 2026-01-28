@@ -16,7 +16,8 @@ RUN set -eux; \
 
 RUN set -eux; \
     # clone local repository (to keep the sym links operational) 
-    git clone -b main https://github.com/watdev-eu/integrated_models ${MODDIR}; \
+    git clone -b dev https://github.com/watdev-eu/integrated_models ${MODDIR}/SourceCode_Watdev; \
+    mv ${MODDIR}/SourceCode_Watdev/src/* ${MODDIR}; \
     # requires specific version compatible with swat
     git clone --depth 1 -b ${DSSAT_VERSION} https://github.com/DSSAT/dssat-csm-os.git ${MODDIR}/SourceCode_dssat-csm-os-master_v4.8; \
     # use forked fixed version (until PR lands)
@@ -34,7 +35,7 @@ ENV PATH="/modeller3/WATDEV/TOOLBOX/bin/:${PATH}"
 
 WORKDIR ${MODDIR}
 
-RUN make swat 
+#RUN make swat 
 
 RUN set -eux; \
     mkdir -p "/model";

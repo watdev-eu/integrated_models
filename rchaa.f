@@ -202,33 +202,33 @@
  !! added NO3 Concentration to output.rch (for daily only) gsm 10/26/2011
         
         
-        if (ipdvar(1) > 0) then
-          do ii = 1, itotr
-            pdvr(ii) = pdvar(ipdvar(ii))
-          end do
-          if (iscen == 1 .and. isproj == 0) then
-          write (7,5000) j, subgis(j), years, rch_dakm(j),              
-     &                                    (pdvr(ii), ii = 1, itotr), j
-          else if (isproj == 1) then
-          write (20,5000) j, subgis(j), years, rch_dakm(j),             
-     &                                    (pdvr(ii), ii = 1, itotr), j
-          else if (iscen == 1 .and. isproj == 2) then
-          write (7,6000) j, subgis(j), years, rch_dakm(j),              
-     &                             (pdvr(ii), ii = 1, itotr), iyr  
-          endif
-        else
+!        if (ipdvar(1) > 0) then
+!          do ii = 1, itotr
+!            pdvr(ii) = pdvar(ipdvar(ii))
+!          end do
+!          if (iscen == 1 .and. isproj == 0) then
+!          write (7,5000) j, subgis(j), years, rch_dakm(j),              
+!     &                                    (pdvr(ii), ii = 1, itotr), j
+!          else if (isproj == 1) then
+!          write (20,5000) j, subgis(j), years, rch_dakm(j),             
+!     &                                    (pdvr(ii), ii = 1, itotr), j
+!          else if (iscen == 1 .and. isproj == 2) then
+!          write (7,6000) j, subgis(j), years, rch_dakm(j),              
+!     &                             (pdvr(ii), ii = 1, itotr), iyr  
+!          endif
+!        else
 !!  increase to 44 in loops below from 42 gsm 10/17/2011
-          if (iscen == 1 .and. isproj == 0) then
-          write (7,5000) j, subgis(j), years, rch_dakm(j),              
-     &                                (pdvar(ii), ii = 1, 44), j    
-          else if (isproj == 1) then
-          write (20,5000) j, subgis(j), years, rch_dakm(j),             
-     &                                (pdvar(ii), ii = 1, 44), j    
-          else if (iscen == 1 .and. isproj == 2) then
-          write (7,6000) j, subgis(j), years, rch_dakm(j),              
-     &                             (pdvar(ii), ii = 1, 44), iyr      
-          endif
-        end if
+!          if (iscen == 1 .and. isproj == 0) then
+!          write (7,5000) j, subgis(j), years, rch_dakm(j),              
+!     &                                (pdvar(ii), ii = 1, 44), j    
+!          else if (isproj == 1) then
+!          write (20,5000) j, subgis(j), years, rch_dakm(j),             
+!     &                                (pdvar(ii), ii = 1, 44), j    
+!          else if (iscen == 1 .and. isproj == 2) then
+!          write (7,6000) j, subgis(j), years, rch_dakm(j),              
+!     &                             (pdvar(ii), ii = 1, 44), iyr      
+!          endif
+!        end if
       end do
 
       return

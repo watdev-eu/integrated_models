@@ -20,7 +20,7 @@ Run model from Github Container Registry.
 Navigate a shell to the TxtInOut folder and run:
 
 ```
-docker run -it -v $(pwd):/model ghcr.io/watdev-eu/integrated_models bash
+docker run -it -v $(pwd):/model ghcr.io/watdev-eu/integrated_models:v0.2 bash
 ```
 
 Or build and run the container locally with:

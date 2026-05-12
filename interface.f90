@@ -29,7 +29,7 @@ TYPE(ToSwatType),allocatable,save::ToSwat_NEW(:)
 TYPE(OrgMatAppType),allocatable,save::ORG_FERT(:),ORG_RESIDUE_MGM(:)
 TYPE(TillType),allocatable,save::TILL_DATA(:)
 TYPE(SpamType),allocatable,save::SPAM_INTERFACE(:)
-TYPE(SpamType)::SPAM1
+TYPE(SpamType)::SPAM_1
 TYPE FileType
 	CHARACTER(LEN=12)::FILE_SPE,FILE_CUL,FILE_ECO,FILE_PST
 END TYPE FileType
@@ -2615,8 +2615,8 @@ DO ii=1,nhru
 	CONTROL_NEW(ii)%DYNAMIC=SEASINIT
 	Call GET(ToSwat)
 	CAll GET(LAND_C)
-	CALL GET(SPAM1)
-	SPAM_INTERFACE(ii)=SPAM1
+	CALL GET(SPAM_1)
+	SPAM_INTERFACE(ii)=SPAM_1
 	ToSwat_NEW(ii)=ToSwat
 	LAND_NEW(ii)=LAND_C
 	
@@ -2624,8 +2624,8 @@ DO ii=1,nhru
 	!WRITe(*,*)'tO lAND SEASINIT'
 	! SEASINIT
 	CALL LAND(CONTROL,ISWITCH,YRPLT,MDATE,YREND)
-	CALL GET(SPAM1)
-	SPAM_INTERFACE(ii)=SPAM1
+	CALL GET(SPAM_1)
+	SPAM_INTERFACE(ii)=SPAM_1
 
 	!WRITE(*,*)'fROM land seasinit'
 	        IF(ii==1)THEN
@@ -2894,15 +2894,15 @@ write(*,*)'MIDDLE INterface_LAND,SUM(SOILPROP%DLAYR)=',SUM(SOILPROP%DLAYR),'inte
 write(*,*)SOILPROP_NEW(ihru)%DLAYR
 STOP
 END IF
-CALL GET(SPAM1)
-ep_max=SPAM1%EOP
-pet_day=SPAM1%EO ! Potential
-es_day=SPAM1%ES  ! Actual amount of evaporation that occurs at day
-ep_day=SPAM1%EP ! Actual amount of transpiration
-!etday=SPAM1%ET
+CALL GET(SPAM_1)
+ep_max=SPAM_1%EOP
+pet_day=SPAM_1%EO ! Potential
+es_day=SPAM_1%ES  ! Actual amount of evaporation that occurs at day
+ep_day=SPAM_1%EP ! Actual amount of transpiration
+!etday=SPAM_1%ET
 IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
-!ep_max=SPAM1%EOP
-etday=SPAM1%ET
+!ep_max=SPAM_1%EOP
+etday=SPAM_1%ET
 END IF
 
 !write(*,*)'BEFORE PET_DAY=',pet_day
@@ -2914,7 +2914,7 @@ call etact
 !write(*,*)'After rate:EP_MAX=',ep_max,'SOURCE:',PLANT_SOURCE(interface_ihru)
 !write(*,*)'pet_day=',pet_day
 
-SPAM_INTERFACE(interface_ihru)=SPAM1
+SPAM_INTERFACE(interface_ihru)=SPAM_1
 
 CONTROL_NEW(ihru)%DYNAMIC=INTEGR
 CONTROL=CONTROL_NEW(ihru)
@@ -2941,7 +2941,7 @@ sol_no3(:,interface_ihru)=sol_no3(:,interface_ihru)/(hru_ha(interface_ihru))
 
 !if(ihru==1)write(*,*)'To land,DYNAMIC=',CONTROL%DYNAMIC
 CALL GET(PlantI)
-CALL GET(SPAM1)
+CALL GET(SPAM_1)
 !IF(YRPLT<(iyr+curyr-1)*1000+day_number)THEN
 !IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
 !write(*,*)'Interface2,WTNLF=',PlantI%WTNLF,&
@@ -2950,24 +2950,24 @@ CALL GET(SPAM1)
 !END IF
 !END IF
 !IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
-!ep_day=SPAM1%EP
-!etday=SPAM1%ET !WAS EVAP          !Actual
-!canev=SPAM1%EP
+!ep_day=SPAM_1%EP
+!etday=SPAM_1%ET !WAS EVAP          !Actual
+!canev=SPAM_1%EP
 
 !END IF
 next_ihru=interface_ihru
 if(interface_ihru.EQ.nhru)next_ihru=1
 
 !IF(PLANT_SOURCE(next_ihru).EQ.'SWAT')THEN
-!ep_max=SPAM1%EOP
+!ep_max=SPAM_1%EOP
 !write(*,*)'EP_MAX=',ep_max,'SOURCE:',PLANT_SOURCE(interface_ihru)
-ep_max=SPAM1%EOP
-pet_day=SPAM1%EO ! Potential
-es_day=SPAM1%ES
-etday=SPAM1%ET
+ep_max=SPAM_1%EOP
+pet_day=SPAM_1%EO ! Potential
+es_day=SPAM_1%ES
+etday=SPAM_1%ET
 !END IF
 !write(*,*)'EP_day=',ep_day,'etday=',etday,'SOURCE:',PLANT_SOURCE(interface_ihru)
-!ep_day=SPAM1%EP
+!ep_day=SPAM_1%EP
 !write(*,*)'ep_day=',ep_day,'etday=',etday,'SOURCE=',PLANT_SOURCE(interface_ihru)
 
 !write(*,*)'.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o'
@@ -2990,8 +2990,8 @@ END IF
 
 
 
-CALL GET(SPAM1)
-SPAM_INTERFACE(interface_ihru)=SPAM1
+CALL GET(SPAM_1)
+SPAM_INTERFACE(interface_ihru)=SPAM_1
 
 SOILPROP_NEW(interface_ihru)=SOILPROP
 if(SUM(SOILPROP%DLAYR)==0)THEN
@@ -3050,11 +3050,11 @@ delgI= 0.
 END IF
 
 !IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
-ep_day=SPAM1%EP
-etday=SPAM1%ET ! was evap          !Actual
-ep_max=SPAM1%EOP
+ep_day=SPAM_1%EP
+etday=SPAM_1%ET ! was evap          !Actual
+ep_max=SPAM_1%EOP
 
-!write(*,*)'After integration etday=',SPAM1%ET,'ET=',SPAM1%ET
+!write(*,*)'After integration etday=',SPAM_1%ET,'ET=',SPAM_1%ET
 !ELSE
 
 !write(*,*)'ep_day=',ep_day,'etday=',etday,'SOURCE=',PLANT_SOURCE(interface_ihru)
@@ -3064,31 +3064,31 @@ next_ihru=interface_ihru
 if(interface_ihru.EQ.nhru)next_ihru=1
 
 !IF(PLANT_SOURCE(next_ihru).EQ.'SWAT')THEN
-!ep_max=SPAM1%EOP
+!ep_max=SPAM_1%EOP
 !END IF
 !write(*,*)'EP_MAX',ep_max
 !write(*,*)'EP_day=',ep_day,'etday=',etday,'SOURCE:',PLANT_SOURCE(interface_ihru)
-!ep_day=SPAM1%EP
+!ep_day=SPAM_1%EP
 !write(*,*)'ep_day=',ep_day,'etday=',etday,'SOURCE=',PLANT_SOURCE(interface_ihru)	
 
 !write(*,*)'.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o'
 
 
-!etday=SPAM1%ET		!Actual
-es_day=SPAM1%ES 
-plt_pet=SPAM1%EO
-!pet_day=SPAM1%EO ! Potential 
+!etday=SPAM_1%ET		!Actual
+es_day=SPAM_1%ES 
+plt_pet=SPAM_1%EO
+!pet_day=SPAM_1%EO ! Potential 
 
-!write(*,*)'ET=',SPAM1%ET,'EO=',SPAM1%EO
+!write(*,*)'ET=',SPAM_1%ET,'EO=',SPAM_1%EO
 IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
-!plt_et(interface_ihru)=SPAM1%ET
-!plt_pet(interface_ihru)=SPAM1%EO
+!plt_et(interface_ihru)=SPAM_1%ET
+!plt_pet(interface_ihru)=SPAM_1%EO
 
-etday=SPAM1%ET          !Actual
+etday=SPAM_1%ET          !Actual
 !if(phuacc(interface_ihru)>0)write(*,*)'Phuacc=',phuacc(interface_ihru)
 END IF
-es_day=SPAM1%ES
-!pet_day=SPAM1%EO ! Potential
+es_day=SPAM_1%ES
+!pet_day=SPAM_1%EO ! Potential
 
 
 !END IF

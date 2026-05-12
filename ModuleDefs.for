@@ -616,7 +616,7 @@ C             CHP Added TRTNUM to CONTROL variable.
 	REAL::KUptake(NL),NH4_plant(NL),NO3_plant(NL),SKi_AVAIL(NL)
 	REAL::SPi_AVAIL(NL),SomLitC(0:NL),SomLitE(0:NL,NELEM)
 	REAL::SW(NL),SWDELTS(NL),SWDELTU(NL),UPPM(NL),WINF,PUptake(NL)
-	REAL::ST(NL),XHLAI,KSEVAP,EOS,RWU(NL),SRFTEMP,TRWU,TRWUP
+	REAL::ST(NL),KSEVAP,EOS,RWU(NL),SRFTEMP,TRWU,TRWUP
 	END TYPE LAND_S	
 		
 !     Data which can be transferred between modules
@@ -657,7 +657,8 @@ C             CHP Added TRTNUM to CONTROL variable.
      &                  , GET_Char
      &			, GET_PlantG
      &                  , GET_S_Land
-     &	                , GET_ToSwat  
+     &	                , GET_ToSwat
+     &                  , GET_SPAM      
       END INTERFACE
 
       INTERFACE PUT
@@ -672,7 +673,8 @@ C             CHP Added TRTNUM to CONTROL variable.
      &                  , PUT_Char
      &			, PUT_PlantG
      &                  , PUT_S_Land 
-     &                  , PUT_ToSwat		
+     &                  , PUT_ToSwat
+     &                  , PUT_SPAM			
       END INTERFACE
 
       CONTAINS
@@ -797,7 +799,19 @@ C             CHP Added TRTNUM to CONTROL variable.
                 ToSwat_ARG=SAVE_data%ToSwat
         RETURN
         END SUBROUTINE GET_ToSwat
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        SUBROUTINE PUT_SPAM(SPAM_ARG)
+        IMPLICIT NONE
+        TYPE(SpamType) SPAM_ARG
+        SAVE_data%SPAM=SPAM_ARG
+        END SUBROUTINE PUT_SPAM
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        SUBROUTINE GET_SPAM(SPAM_ARG)
+        IMPLICIT NONE
+        TYPE(SpamType) SPAM_ARG
+                SPAM_ARG=SAVE_data%SPAM
+        RETURN
+        END SUBROUTINE GET_SPAM
 
 
 

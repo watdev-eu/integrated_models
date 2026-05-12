@@ -45,10 +45,10 @@ C-----------------------------------------------------------------------
       CHARACTER*6  ERRKEY
       PARAMETER (ERRKEY = 'IPPLNT')
 
-      CHARACTER*12 FILEC, FILEE
+      CHARACTER*12 FILEC3, FILEE3
       CHARACTER*30 FILEIO
       CHARACTER*78 MSG(6)
-      CHARACTER*80 PATHCR, CHAR, PATHEC
+      CHARACTER*80 PATHCR3, CHAR, PATHEC3
       CHARACTER*92 FILECC, FILEGC
       CHARACTER*255 C255
 
@@ -85,27 +85,36 @@ C-----------------------------------------------------------------------
 !       Read data from FILEIO for use in PLANT module
 !-----------------------------------------------------------------------
 	if(useSWAT)then
-		CALL interface_speciesDATA(FILEC,PATHCR,FILEE,PATHEC)
-	write(*,*)'FILEC=',FILEC
-	write(*,*)'PATHCR=',PATHCR
-	write(*,*)'FILEE=',FILEE
-	write(*,*)'PATHEC=',PATHEC
+		FILEC3=''
+		FILEE3=''
+		CALL interface_speciesDATA1F(1,FILEC3)
+		!write(*,*)'1mFILEC:',FILEC3
+                CALL interface_speciesDATA1F(2,FILEE3)
+		                !write(*,*)'2 FILEC:',FILEC3
+                CALL interface_speciesDATA1P(PATHCR3)
+                PATHEC3=PATHCR3
+
+	!WRITE(*,*)'IPPLANT'
+	!write(*,*)'FILEC=',FILEC3
+	!write(*,*)'PATHCR=',PATHCR3
+	!write(*,*)'FILEE=',FILEE3
+	!write(*,*)'PATHEC=',PATHEC3
 	CALL GET(PlantI)
 	CROP=CONTROL%CROP
 	ECONO=PlantI%ECONO
-	write(*,*)'ECONO=',ECONO
-!	STOP
+	!write(*,*)'ECONO=',ECONO
+	!STOP
     !CROP
     !ECONO
 	ELSE
       OPEN (LUNIO, FILE = FILEIO, STATUS = 'OLD', IOSTAT=ERR)
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,0)
 !-----------------------------------------------------------------------
-      READ(LUNIO,50,IOSTAT=ERR) FILEC, PATHCR ; LNUM = 7
+      READ(LUNIO,50,IOSTAT=ERR) FILEC3, PATHCR3 ; LNUM = 7
    50 FORMAT(6(/),15X,A12,1X,A80)
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
 
-      READ(LUNIO,51,IOSTAT=ERR) FILEE, PATHEC; LNUM = LNUM + 1
+      READ(LUNIO,51,IOSTAT=ERR) FILEE3, PATHEC3; LNUM = LNUM + 1
    51 FORMAT(15X,A12,1X,A80)
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
 
@@ -140,7 +149,7 @@ C-----------------------------------------------------------------------
       CLOSE (LUNIO)
 	END IF
 	CALL GET(PlantI)
-	!write(*,*)'FILEC=',FILEC
+	!write(*,*)'FILEC=',FILEC3
 !-----------------------------------------------------------------------
       IF (CROP .NE. 'FA') THEN
 !-----------------------------------------------------------------------
@@ -148,15 +157,15 @@ C-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
         LNUM = 0
 	!write(*,*)'BLANK',BLANK
-        PATHL  = INDEX(PATHCR,BLANK)
+        PATHL  = INDEX(PATHCR3,BLANK)
 	!write(*,*)'IPPLNT, PATHL=',PATHL,'PATHCR=',PATHCR
         IF (PATHL .EQ. 1) THEN
-          FILECC = FILEC
+          FILECC = FILEC3
         ELSE
 		IF(PATHL==0)THEN
-	FILECC=PATHCR//FILEC
+	FILECC=PATHCR3//FILEC3
 	ELSE	
-          FILECC = PATHCR(1:(PATHL-1)) // FILEC
+          FILECC = PATHCR3(1:(PATHL-1)) // FILEC3
 	END IF
         ENDIF
 	!write(*,*)'Inside, FILEC=',FILECC
@@ -431,15 +440,15 @@ C    Read Ecotype Parameter File
 C-----------------------------------------------------------------------
 !    Set file plus pathname for ecotype parameter file
 !-----------------------------------------------------------------------
-        PATHL  = INDEX(PATHEC,BLANK)
+        PATHL  = INDEX(PATHEC3,BLANK)
 	!write(*,*)'PATHL:',PATHL,PATHEC
         IF (PATHL .EQ. 1) THEN
-          FILEGC = FILEE
+          FILEGC = FILEE3
         ELSE
 		if(PATHL==0)then
-			FILEGC=PATHEC//FILEE
+			FILEGC=PATHEC3//FILEE3
 		ELSE
-          		FILEGC = PATHEC(1:(PATHL-1)) // FILEE
+          		FILEGC = PATHEC3(1:(PATHL-1)) // FILEE3
 		END IF
         ENDIF	
 	!write(*,*)'FILEGC=',FILEGC

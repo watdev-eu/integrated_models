@@ -55,16 +55,19 @@
 !!    ~ ~ ~ ~ ~ ~ END SPECIFICATIONS ~ ~ ~ ~ ~ ~
 
       use parm
-   
+      USE interface2	   
       integer :: j
       real :: aphu, tillphu
 
       j = 0
       j = ihru
 
+        !write(*,*)'idop=',idop(nop(j),j)
+        !write(*,*)'idop(:,j)=',idop(:,j)
+        !STOP
 
 !! operations performed only when no land cover growing
-      	
+	      	
         do while(idop(nop(j),j) > 0 .and. iida == idop(nop(j),j))
 	!write(*,*)'idop=',idop(nop(j),j)
 	!write(*,*)'idop(:,j)=',idop(:,j)
@@ -82,8 +85,17 @@
           aphu = phuacc(j)
         end if 
         if (dorm_flag == 1) aphu = 999.
-!	write(*,*)'operatn,phu_op=',phu_op(nop(j),j),'aphu=',aphu
+!	if(PLANT_SOURCE(j)=='DSAT')THEN
+!	write(*,*)'aphu=',aphu
+!	write(*,*)'phu_op=',phu_op(nop(j),j)
+
+!	END IF
+	!if(j==2)THEN
+	!write(*,*)'aphu=',aphu,phuacc(j)
+	!!STOP
+	!END IF
         do while (phu_op(nop(j),j) > 0. .and. aphu > phu_op(nop(j),j))
+	
           call sched_mgt
           if (igro(j) == 0) then
             aphu = phubase(j)

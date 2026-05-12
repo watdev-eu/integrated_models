@@ -26,6 +26,7 @@ C=======================================================================
                          ! which contain control information, soil
                          ! parameters, hourly weather data.
 	USE ModuleData
+	USE interface2
       IMPLICIT NONE
       SAVE
 
@@ -108,7 +109,32 @@ C=======================================================================
 
       PHTEM = 0.0
       PROG  = 0.0
+	CALL GET(PlantR)
+	PlantR%NVEG0=NVEG0
+!	PlantR%NVEG1=NVEG1
+!	PlantR%JPEND=JPEND
+!	PlantR%NR0=NR0
+        PlantR%NR1=NR1
+        PlantR%NR2=NR2
+!       PlantR%NR3=NR3
+        PlantR%NR5=NR5
+        PlantR%NR7=NR7
+        PlantR%NDLEAF=NDLEAF
+!       PlantR%NDVST=NDVST
+        PlantR%NDSET=NDSET
+        PlantR%YRNR1=YRNR1
+        PlantR%YRNR2=YRNR2
+!        PlantR%YRNR3=YRNR3
+        PlantR%YRNR5=YRNR5
+        PlantR%YRNR7=YRNR7
+        PlantR%MDATE=MDATE
+        PlantR%YREMRG=YREMRG
+	PlantR%PHZACC=PHZACC
 
+
+
+
+	CALL PUT(PlantR)
 !     For P module:
       SeedFrac = 0.0
       VegFrac  = 0.0
@@ -152,6 +178,7 @@ C***********************************************************************
 	CALL GET(PlantR)
 	NVEG0=PlantR%NVEG0
 	PHZACC=PlantR%PHZACC
+	!write(*,*)'PHZACC(1)=',PHZACC(1)
 !-----------------------------------------------------------------------
 !     DAS   = MAX(0,TIMDIF(YRSIM,YRDOY))
       DO  J = 1,20
@@ -202,21 +229,23 @@ C-----------------------------------------------------------------------
 C     Check for emergence, if NVEG0 has been set to less than its 
 !         initial value
 C-----------------------------------------------------------------------
-C	write(*,*)'NVEG0=',NVEG0,'NVALP0=',NVALP0	
+C
+	!write(*,*)'NVEG0=',NVEG0,'NVALP0=',NVALP0	
       IF (NVEG0 .GE. NVALP0) THEN
         PHTEM = PHTHRS(1) + SDEPTH * 0.6
         PROG(1) = FT(1) * FUDAY(1) * MIN(FSW(1),FNSTR(1),FPSTR(1))
         PHZACC(1) = PHZACC(1) + PROG(1)
-	write(*,*)'PHTEM=',PHTEM,'PHZACC(1)=',PHZACC(1)
-	write(*,*)'FSW(1)=',FSW(1),'FNSTR(1)=',FNSTR(1),
-     & 'FPSTR(1)=',FPSTR(1)
-	write(*,*)'FT(1)=',FT(1),'FUDAY(1)=',FUDAY(1)
+	!write(*,*)'PHTEM=',PHTEM,'PHZACC(1)=',PHZACC(1)
+	!write(*,*)'FSW(1)=',FSW(1),'FNSTR(1)=',FNSTR(1),
+        !& 'FPSTR(1)=',FPSTR(1)
+	!write(*,*)'FT(1)=',FT(1),'FUDAY(1)=',FUDAY(1)
 !        IF ((PHZACC(1) .GE. PHTEM) .OR. (ISIMI .EQ. 'E')) THEN
         IF ((PHZACC(1) - PHTEM) > -1.E-6 .OR. (ISIMI .EQ. 'E')) THEN
 
 C-----------------------------------------------------------------------
 C       Emergence, next stage, occurs on day DAS
 C-----------------------------------------------------------------------
+	  write(*,*)'RSTAGES,EMERGGENSE'
           NVEG0 = DAS
           NVALPH(2) = NVEG0
           YREMRG    = YRDOY
@@ -342,11 +371,14 @@ C-------------------------------------------------------------------------------
 C-------------------------------------------------------------------------------
 C       First peg occurs on day DAS
 C-------------------------------------------------------------------------------
+	!write(*,*)'YRDOY=',YRDOY,'Stage 7'
           NR2 = DAS
           STGDOY(6) = YRDOY
           NVALPH(7) = NR2
           YRNR2     = YRDOY
           RSTAGE    = 2
+		!write(*,*)'YRNR2=',YRNR2,'iida=',interface_ihru
+	!STOP
 C-------------------------------------------------------------------------------
 C       Account for the part of today that contributes to the next phase(s)
 C-------------------------------------------------------------------------------

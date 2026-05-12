@@ -322,7 +322,7 @@
       endif
 
       open(100009,file='auto_irrig_hrus')
-
+!	write(*,*)'READING MANAGEMENT'
 !!    read general management parameters
       read (109,5000) titldum
       read (109,*) nmgt(ihru)
@@ -528,13 +528,15 @@
           mgt8op(iop,ihru) = mgt8
           mgt9op(iop,ihru) = mgt9
           mgt10iop(iop,ihru) = mgt10i
+	   
+
           if (mgt_op == 1) then
             idplt(ihru) = mgt1i
             icrmx(ihru) = icrmx(ihru) + 1
             idplrot(icrmx(ihru),ihru) = mgt1i
             mcrhru(ihru) = mcrhru(ihru) + 1
-	!write(*,*)'ihru',ihru,idop(:,ihru)
-	!STOP
+	
+	
           end if
 	    if (mgt_op == 4 .or. mgt_op == 15) then
 	      newpest = 0

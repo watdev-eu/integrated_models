@@ -1,7 +1,6 @@
-
-      module parm
+	MODULE PARM
       !SWAT-DSSAT
-	real,dimension(:),allocatable::DRN_SWAT
+       real,dimension(:),allocatable::DRN_SWAT
        CHARACTER(len=3),dimension(:,:),allocatable::soil_texture
       !SWAT variable made global for linkage with MODFLOW and RT3D
       real, dimension (:), allocatable :: etremain

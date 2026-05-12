@@ -98,8 +98,10 @@
       use interface2  	
       integer :: idlst, j, iix, iiz, ic, mon, ii
       real :: xx
-      ! MOdification JJ 23.4 	
-      CALL interface_begin('simul',5)	
+      ! MOdification JJ 23.4
+!	IF (useDSSAT)THEN 	
+      CALL interface_begin('simul',5)
+!	END IF	
       !Loop through the years of the simulation
       day_total = 0
 	do curyr = 1, nbyr
@@ -109,7 +111,7 @@
         !! initialize annual variables
         call sim_inityr
        !MODIFICATION
- !      IF(useDSSAT)THEN
+!       IF(useDSSAT)THEN
 	   ! Call interface 
 !	   plant_inityr
 !       END IF
@@ -246,15 +248,16 @@
               call resetlu
               no_lup = no_lup + 1
            end if
-		write(*,*)'before command,iida=',iida
+		!write(*,*)'before command,iida=',iida
           !perform all watershed operations for the current day
           call command
-	write(*,*)'after command,iida=',iida
+	!write(*,*)'after command,iida=',iida
         do ihru = 1, nhru                                    
           if (idaf > 180 .and. sub_lat(hru_sub(ihru)) < 0) then
             if (i == 180) then
                if (mgtop(nop(ihru),ihru) /=17) then         
                   dorm_flag = 1
+		write(*,*)'simulate: to operatn'
                   call operatn
                   dorm_flag = 0
                endif
@@ -270,14 +273,14 @@
 	    
 	    endif
         end do
-        write(*,*)'after operatn,iida=',iida,'i=',i
+        !write(*,*)'after operatn,iida=',iida,'i=',i
 	    !! write daily and/or monthly output
           if (curyr > nyskip) then
             call writed
-		write(*,*)'1 i=',i
+		!write(*,*)'1 i=',i
             !! output.sol file
             if (isol == 1) call soil_write
-                write(*,*)'1 i=',i
+                !write(*,*)'1 i=',i
 
             iida = i + 1
             call xmon
@@ -286,12 +289,12 @@
             iida = i + 1
             call xmon
           endif
-       write(*,*)'befor mod,iida=',iida
+       !write(*,*)'befor mod,iida=',iida
 	! MOdification
 	IF(useDSSAT)THEN
 		call interface_daily_output
 	END IF
-	write(*,*)'END OF DAILY LOOP,iida=',iida
+	!write(*,*)'END OF DAILY LOOP,iida=',iida
         end do                                        !! end daily loop
 
         !! perform end-of-year processes

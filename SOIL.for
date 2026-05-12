@@ -33,7 +33,7 @@
 C=====================================================================
 
       SUBROUTINE SOIL(CONTROL, ISWITCH, 
-     &    ES, FERTDATA, HARVRES, IRRAMT, KTRANS,          !Input
+     &    ES, FERTDATA, HARVRES, IRRAMT_DSSAT, KTRANS,          !Input
      &    KUptake, OMAData, PUptake, SENESCE, ST,         !Input
      &    FracRts, SWDELTX,TILLVALS, UNH4, UNO3, UPFLOW,  !Input
      &    WEATHER, XHLAI, FLOODN, FLOODWAT, MULCH,        !I/O
@@ -56,7 +56,7 @@ C=====================================================================
       REAL               , INTENT(IN) :: ES
       TYPE (FertType)    , INTENT(IN) :: FERTDATA
       Type (ResidueType) , INTENT(IN) :: HARVRES
-      REAL               , INTENT(IN) :: IRRAMT
+      REAL               , INTENT(IN) :: IRRAMT_DSSAT
       REAL               , INTENT(IN) :: KTRANS
       TYPE (OrgMatAppType),INTENT(IN) :: OMAData
       REAL, DIMENSION(NL), INTENT(IN) :: PUptake, KUptake
@@ -116,7 +116,9 @@ C=====================================================================
       MESOM   = ISWITCH % MESOM
 
 !***********************************************************************
-	!write(*,*)'SOIL,DYNAMIC=',DYNAMIC
+	!write(*,*)'SOIL,DYNAMIC=',DYNAMIC,'RATE=',RATE
+	!write(*,*)'IRRAMT=',IRRAMT_DSSAT
+	SW=SOILPROP%SW
 	!write(*,*)'SOIL:TO SOILDYN'
 !     Call Soil Dynamics module 
 !      IF (DYNAMIC < OUTPUT) THEN
@@ -130,18 +132,20 @@ C=====================================================================
 	IF(useSWAT)THEN
 	IF(DYNAMIC/=SEASINIT)THEN
 !	if(interface_ihru==1)write(*,*)'SOIL To WATBAL SWDELTX=',SWDELTX
+
+	!write(*,*)'SOIL to interface_WATBAL,IRRAMT=',IRRAMT_DSSAT
 		CALL interface_WATBAL(DRN,SNOW,SW,SWDELTS,
      &TDFC,TDLNO,UPFLOW,WINF,30.0,SOILPROP%DLAYR,SOILPROP%DUL,
      &SOILPROP%LL,
-     &SOILPROP%NLAYR,100.00,SWDELTX,IRRAMT)
-		
+     &SOILPROP%NLAYR,100.00,SWDELTX,IRRAMT_DSSAT)
+		!write(*,*)'SOIL,IRRAMT=',IRRAMT_DSSAT,'i=',interface_ihru
 
 !	if(interface_ihru==1)write(*,*)'SOIL,Root uptake=', SWDELTX
 	END IF
 	ELSE	
       IF (DYNAMIC /= SEASINIT) THEN
         CALL WATBAL(CONTROL, ISWITCH, 
-     &    ES, IRRAMT, SOILPROP, SWDELTX,                  !Input
+     &    ES, IRRAMT_DSSAT, SOILPROP, SWDELTX,                  !Input
      &    TILLVALS, WEATHER,                              !Input
      &    FLOODWAT, MULCH, SWDELTU,                       !I/O
      &    DRN, SNOW, SW, SWDELTS,                         !Output
@@ -198,13 +202,13 @@ C=====================================================================
 		CALL interface_WATBAL(DRN,SNOW,SW,SWDELTS,
      &TDFC,TDLNO,UPFLOW,WINF,
      &30.0,SOILPROP%DLAYR,SOILPROP%DUL,SOILPROP%LL,
-     &SOILPROP%NLAYR,100.00,SWDELTX,IRRAMT	)
+     &SOILPROP%NLAYR,100.00,SWDELTX,IRRAMT_DSSAT	)
 	!WINF=WINF+IRRAMT
 	!WRITE(*,*)'SOIL,ROOT UPTAKE=',SWDELTX
 	ELSE
 !       Soil water balance -- call last for initialization
         CALL WATBAL(CONTROL, ISWITCH, 
-     &    ES, IRRAMT, SOILPROP, SWDELTX,                  !Input
+     &    ES, IRRAMT_DSSAT, SOILPROP, SWDELTX,                  !Input
      &    TILLVALS, WEATHER,                              !Input
      &    FLOODWAT, MULCH, SWDELTU,                       !I/O
      &    DRN, SNOW, SW, SWDELTS,                         !Output

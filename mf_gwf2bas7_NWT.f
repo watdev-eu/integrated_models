@@ -1,4 +1,4 @@
-      MODULE GLOBAL
+      MODULE global
 
         !for linkage with SWAT
         logical :: readMFinput, mf_ran
@@ -65,7 +65,7 @@
         REAL,       DIMENSION(:,:,:), POINTER ::DDREF
       END TYPE GLOBALTYPE
       TYPE(GLOBALTYPE),SAVE ::GLOBALDAT(10)
-      END MODULE GLOBAL
+      END MODULE global
       
       
       

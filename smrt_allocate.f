@@ -11,7 +11,7 @@
       use smrt_parm !smrt linkage
       use mf_rt_link
       use rt_global, only: ncomp
-      use GLOBAL, only:NCOL,NROW,NLAY,IBOUND !MODFLOW
+      use GLOBAL,only:NCOL,NROW,NLAY,IBOUND !MODFLOW
       use GWFBASMODULE, only:HNOFLO
       use GWFRIVMODULE, only:MXRIVR 
       implicit none

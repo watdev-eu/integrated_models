@@ -22,7 +22,7 @@ C  07/30/2004 CHP Added KC_SLOPE to SPE file and KC_ECO to ECO file.
 C=======================================================================
 
       SUBROUTINE PHOTO(CONTROL, 
-     &    BETN, CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
+     &    BETN, DSAT_CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
      &    NR5, PAR, PStres1, SLPF, RNITP, SLAAD,          !Input
      &    SWFAC, TDAY, XHLAI, XPOD,                       !Input
      &  AGEFAC, PG)                                       !Output
@@ -42,7 +42,7 @@ C=======================================================================
       INTEGER DAS, NR5
 
       REAL AGEFAC, AGEFCC, AGEREF, A0, BETN, CCEFF, CCK, CCMAX, 
-     &  CCMP, CO2, COLDSTR, CUMSTR, CURV, DXR57, EXCESS,
+     &  CCMP, DSAT_CO2, COLDSTR, CUMSTR, CURV, DXR57, EXCESS,
      &  KCAN, KCANR, KC_SLOPE, LMXSTD, LNREF, PAR, PARMAX, PG, PGFAC, 
      &  SLPF, PGLFMX, PGREF, PGSLW, PHTHRS10, PHTMAX, PRATIO, 
      &  PTSMAX, RNITP, ROWSPC, SLAAD, SLW, SPACNG, SWFAC, 
@@ -87,10 +87,7 @@ C-----------------------------------------------------------------------
       ELSE
         PGLFMX = 1.0
       ENDIF
-      !write(*,*)'PHOTO,RUNINIT,PGLFMX=',PGLFMX,'LMXSTD=',LMXSTD!
-	!write(*,*)'PGREF=',PGREF
-	!STOP
-C***********************************************************************
+C**********************************************************************
 C***********************************************************************
 C     Seasonal initialization - run once per season
 C***********************************************************************
@@ -100,7 +97,10 @@ C-----------------------------------------------------------------------
       CUMSTR  = 0.0
       COLDSTR = 0.0
       PG      = 0.0
-
+	!PlantP%PG=PG
+	!PlantP%AGEFAC=AGEFAC
+	!PlantP%CUMSTR=CUMSTR
+	!PlantP%COLDSTR=COLDSTR
 C***********************************************************************
 C***********************************************************************
 C     Daily rate calculations
@@ -113,21 +113,22 @@ C-----------------------------------------------------------------------
 	PARMAX=PlantP%PARMAX
 	PHTMAX=PlantP%PHTMAX
       PTSMAX = PHTMAX * (1.0 - EXP(-(1.0 / PARMAX) * PAR))
-!	write(*,*)'PHTMAX=',PHTMAX,'PARMAX=',PARMAX,'PAR=',PAR
+
 C-----------------------------------------------------------------------
 C     Calculate reduction in photosynthesis due to incomplete canopy.
 C-----------------------------------------------------------------------
+	ROWSPC=PlantP%ROWSPC
       IF (BETN .LE. ROWSPC) THEN
         SPACNG = BETN / ROWSPC
       ELSE
         SPACNG = ROWSPC / BETN
       ENDIF
-!	write(*,*)'BETN=',BETN,'ROWSPC=',ROWSPC
+
 !chp per CDM:      KCANR = KCAN - (1. - SPACNG) * 0.1
       KCANR = KCAN - (1. - SPACNG) * KC_SLOPE
-!	write(*,*)'KCAN=',KCAN,'SPACNG=',SPACNG,'KC_SLOPE=',KC_SLOPE
+
       PGFAC = 1. - EXP(-KCANR * XHLAI)
-!	write(*,*)'PHOTO,RATE,PGFAC=',PGFAC,'KCANR=',KCANR,'XHLAI=',XHLAI	
+	
 C-----------------------------------------------------------------------
 C     Compute reduction in PG based on the average daylight temperature.
 C-----------------------------------------------------------------------
@@ -173,9 +174,10 @@ C-----------------------------------------------------------------------
 	CCEFF=PlantP%CCEFF	
       CCK = CCEFF / CCMAX
       A0 = -CCMAX * (1. - EXP(-CCK * CCMP))
-      PRATIO = A0 + CCMAX * (1. - EXP(-CCK * CO2))
-!	write(*,*)'CCMP=',CCMP,'CO2=',CO2,'ihru=',interface_ihru!
-!	write(*,*)'xxxxxxxxxxxxxxxxxxxxxPHOTOxxxxxxxxxxxxxxxxxxxxxxxxxx'
+      PRATIO = A0 + CCMAX * (1. - EXP(-CCK * DSAT_CO2))
+
+
+
 !***********************************************************************
 !***********************************************************************
 !     Daily integration
@@ -201,6 +203,7 @@ C-----------------------------------------------------------------------
 !     CHP 05/07/2004 
 !     AGEFCC can be > 1.0, so don't want to use minimum of 
 !     PStres1 and AGEFCC.  (PStres1 is always 1.0 or below).
+	AGEFAC=PlantP%AGEFAC
       IF (AGEFCC .GE. 1.0) THEN
         E_FAC = AGEFCC * PStres1
       ELSE
@@ -209,11 +212,11 @@ C-----------------------------------------------------------------------
 
       PG =  PTSMAX * SLPF * PGFAC * TPGFAC * E_FAC * 
      &            PGSLW * PRATIO * PGLFMX * SWFAC
-!	write(*,*)'PHOTO,PG=',PG!
-!	write(*,*)'PTSMAX=',PTSMAX,'SLPF=',SLPF,'TPGFAC=',TPGFAC	
-!	write(*,*)'PGSLW=',PGSLW,'PRATIO=',PRATIO,'PGLFMX=',PGLFMX
-!	write(*,*)'SWFAC=',SWFAC,'PGFAC=',PGFAC
-!	write(*,*)'------------------PHOTO---------------------------'
+
+	
+
+
+
 !From WDB (chp 10/21/03):
 !        PG = PG * MIN(SWFAC ,2*(1-SATFAC) )
 !        PGN = PGN * MIN(SWFAC,2*(1-SATFAC) )
@@ -239,12 +242,12 @@ C     AND THEN ADD A SCALAR?
 C       COLDSTR =  COLDSTR + DXR57 * (F(TMIN?)*XPOD / PHTHRS(10)
 C       PG = PG * (1.0 - MAX(0.4*CUMSTR,1.0*COLDSTR))
 C-----------------------------------------------------------------------
-!	write(*,*)'DAS=',DAS,'NR5=',NR5
+
       IF (DAS .GT. NR5) THEN
         CUMSTR =  CUMSTR + DXR57 * (1.0 - SWFAC) * XPOD / PHTHRS10
         COLDSTR = 0.0
-!	write(*,*)'CUMSTR=',CUMSTR,'DXR57=',DXR57,'SWFAC=',SWFAC
-!	write(*,*)'XPOD=',XPOD,'PHTHRS10=',PHTHRS10
+
+
         PG = PG * (1.0 - 0.3 * CUMSTR)
       ELSE
         CUMSTR = 0.0
@@ -252,8 +255,7 @@ C-----------------------------------------------------------------------
       ENDIF
 
       PG = PG * EXCESS
-!	write(*,*)'PG=',PG,'EXCESS=',EXCESS!
-!	write(*,*)'VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV'
+
 !***********************************************************************
 !***********************************************************************
 !     END OF DYNAMIC IF CONSTRUCT
@@ -288,9 +290,9 @@ C=======================================================================
       CHARACTER*1  BLANK
       CHARACTER*3  TYPPGN, TYPPGT
       CHARACTER*6  ERRKEY, SECTION
-      CHARACTER*12 FILEC
+      CHARACTER*12 FILEC2,FILEE2
       CHARACTER*30 FILEIO
-      CHARACTER*80 PATHCR,CHAR
+      CHARACTER*80 PATHCR2,CHAR,PATHEE2
       CHARACTER*92 FILECC
 
       INTEGER LUNIO, LINC, LNUM, FOUND
@@ -307,8 +309,11 @@ C=======================================================================
 	TYPE(Plant_Growth) PlantP
 	CALL GET(PlantP)
       IF(useSWAT)THEN
-!	write(*,*)'Using interface'
-	CALL interface_speciesDATA(FILEC,PATHCR)
+
+	CALL interface_speciesDATA1F(1,FILEC2)
+
+        CALL interface_speciesDATA1P(PATHCR2)
+
 	! This are actually INPUTS
 	CALL interface_PHOTOIP(ROWSPC,PHTHRS10,LMXSTD)
 	ROWSPC=ROWSPC/100.00
@@ -323,7 +328,7 @@ C=======================================================================
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,0)
 
 !-----------------------------------------------------------------------
-      READ(LUNIO,50,IOSTAT=ERR) FILEC, PATHCR; LNUM = 7
+      READ(LUNIO,50,IOSTAT=ERR) FILEC2, PATHCR2; LNUM = 7
    50 FORMAT(//////,15X,A12,1X,A80)
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
 
@@ -360,15 +365,15 @@ C-----------------------------------------------------------------------
       END IF
 C-----------------------------------------------------------------------
       LNUM = 0
-      PATHL  = INDEX(PATHCR,BLANK)
-!	write(*,*)'PATHL=',PATHL
+      PATHL  = INDEX(PATHCR2,BLANK)
+
       IF (PATHL .EQ. 1) THEN
-        FILECC = FILEC
+        FILECC = FILEC2
       ELSE
 	IF(PATHL==0)THEN
-		FILECC=PATHCR//FILEC
+		FILECC=PATHCR2//FILEC2
 	ELSE
-        FILECC = PATHCR(1:(PATHL-1)) // FILEC
+        FILECC = PATHCR2(1:(PATHL-1)) // FILEC2
 	END IF
       ENDIF
 !	write(*,*)'PHOTO:',FILECC

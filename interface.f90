@@ -2692,7 +2692,7 @@ CHARACTER(len=80)::APU1,APU2
 
 !write(*,*)'inside interface_SPECIESdata1P'
 
-APU1=TRIM('/mnt/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/')
+APU1=TRIM('/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/')
 PATHout=APU1
 !write(*,*)'PATHout:',PATHout
 RETURN

@@ -151,11 +151,7 @@ C     Transfer values from constructed data types into local variables.
       YRSIM   = CONTROL % YRSIM
 
       IPLTI   = ISWITCH % IPLTI
-!      IF(interface_ihru==1)THEN	
-!	write(*,*)'LAND,DYNAMIC',DYNAMIC,
- !    &'ihru=',interface_ihru,PLANTING_DSSAT(interface_ihru)
-!	END IF
-!	write(*,*)'LAND, CONTROL%DYNAMIC=',CONTROL%DYNAMIC
+
 C***********************************************************************
 C***********************************************************************
 C     Run Initialization - Called once per simulation
@@ -181,15 +177,10 @@ C-----------------------------------------------------------------------
 C     Read switches from FILEIO
 C-----------------------------------------------------------------------
 	IF(useSWAT)THEN
-!	write(*,*)'LAND,to interface DYNAMIC',CONTROL%DYNAMIC
 		CALL interface_IPIBS(CONTROL,ISWITCH,CROP,IDETS,MODEL)
-	!write(*,*)'RUN INIT ISWITCH%ISWWAT=',ISWITCH%ISWWAT
-	!write(*,*)'KYTKIN',KYTKIN%ISWWAT
-	!STOP
 	ELSE
 	      CALL IPIBS (CONTROL, ISWITCH, CROP, IDETS, MODEL)
 	END IF
-!	write(*,*)'LAND,DYNAMIC',DYNAMIC,'CONTROL%DYNAMIC',CONTROL%DYNAMIC
 C-----------------------------------------------------------------------
 C     Read input parameters for weather routines
 C-----------------------------------------------------------------------
@@ -199,8 +190,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Read initial soil data 
 C-----------------------------------------------------------------------
-!	write(*,*)'LAND:To SOIL, DYNAMIC=',DYNAMIC,'CONTROL%DYNAMIC=',
- !    &   CONTROL%DYNAMIC
+
 	CALL GET(PlantL)
 	CALL GET(LAND_C)
 	CALL GET(SWAT_DATA)
@@ -211,12 +201,14 @@ C-----------------------------------------------------------------------
 	SWDELTX=LAND_C%SWDELTX
 	KTRANS=LAND_C%KTRANS
 	ES=SPAM_DATA%ES
-	IRRAMT_DSSAT=MGM_DATA%IRRAMT
+	!IRRAMT_DSSAT=MGM_DATA%IRRAMT
+	CALL GET('MGMT','IRRAMT',IRRAMT_DSSAT)
+	IF(IRRAMT_DSSAT>0)STOP
 	KUptake=LAND_C%KUptake
 	PUptake=LAND_C%PUptake
 	ST=LAND_C%ST
 	FracRts=PlantL%FracRts
-	XHLAI=LAND_C%XHLAI
+	XHLAI=PLANTL%XHLAI
 	
 	FERTDATA=SWAT_DATA%FERT_DATA
 	HARVRES=SWAT_DATA%HARVRES_DATA
@@ -245,12 +237,15 @@ C-----------------------------------------------------------------------
 	LAND_C%SomLitC=SomLitC
 	LAND_C%SomLitE=SomLItE
 	LAND_C%SW=SW
+	SOILPROP%SW=SW
+
+
 	LAND_C%SWDELTS=SWDELTS
 	LAND_C%SWDELTU=SWDELTU
 	LAND_C%UPPM=UPPM
 	LAND_C%WINF=WINF
 	SOIL_W%SNOW=SNOW
-
+	PLANTL%XHLAI=XHLAI
 
 
 C-----------------------------------------------------------------------
@@ -267,7 +262,7 @@ C-----------------------------------------------------------------------
 	RWUMX=PlantL%RWUMX
 	UH2O=SPAM_DATA%UH2O
 	XLAI=PlantL%XLAI
-	write(*,*)'TO SPAM, RUNINIT'
+	
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
      &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
@@ -291,9 +286,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     Read initial plant module data
 C-----------------------------------------------------------------------
-	!write(*,*)'TO PLANT'
 	if(CROP.NE.'WA')THEN
-	write(*,*)'LAND:To DSSAT PLANT ',interface_ihru
       CALL PLANT(CONTROL, ISWITCH, 
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4_plant, NO3_plant, SKi_Avail, SomLitC, SomLitE, !Input
@@ -306,7 +299,6 @@ C-----------------------------------------------------------------------
      &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
      &    STGDOY, FracRts, UH2O, UNH4, UNO3, XHLAI, XLAI) !Output
 	Call GET(PlantL)
-!	write(*,*)'INITRUN, PROSTI=',PlantL%PROSTI
 	Type_Plant%CANHT=CANHT
 	PlantL%EORATIO=EORATIO
 	LAND_C%KSEVAP=KSEVAP
@@ -336,18 +328,18 @@ C-----------------------------------------------------------------------
 
 
 	ELSE
-		!write(*,*)'LAND:To interface_plant'
+	  CALL PUT(LAND_C)
+		
 		call interface_plant
 	END IF
+	
 	CALL PUT(PlantL)
 	CALL PUT(LAND_C)
 	CALL PUT(SWAT_DATA)
 C-----------------------------------------------------------------------
 C     Initialize summary.out information
 C-----------------------------------------------------------------------
-!	write(*,*)'To OPSUM'
       CALL OPSUM (CONTROL, ISWITCH, YRPLT)
-	write(*,*)'END RUNINIT'
 C*********************************************************************** 
 C*********************************************************************** 
 C     SEASONAL INITIALIZATION
@@ -362,7 +354,7 @@ C     data for use in soil N and soil temp initialization.
 C-----------------------------------------------------------------------
 !MODIFICATION BY JJ
 !      CALL WEATHR(CONTROL, ISWITCH, WEATHER, YREND)
-!	write(*,*)'LAND:weather'
+
 	CALL interface_weather(WEATHER)
 C-----------------------------------------------------------------------
 C     Set planting date, adjust operations dates for seasonal or 
@@ -383,7 +375,7 @@ C-----------------------------------------------------------------------
      &    YREND, FERTDATA, HARVFRAC, IRRAMT_DSSAT,              !Output
      &    MDATE, OMADATA, TILLVALS, YRPLT)                !Output
 
-!	write(*,*)'LAND',YRPLT,'<',YRSIM,'IPLTI=',IPLTI	
+
 	END IF
         SWAT_DATA%FERT_DATA=FERTDATA
         !HARVRES=SWAT_DATA%HARVRES_DATA
@@ -397,7 +389,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
       IF (YRPLT < YRSIM .AND. CROP /= 'FA' .AND.
      &    INDEX('AF', IPLTI) == 0) THEN
-!	write(*,*)'YRPLT=',YRPLT,'YRSIM=',YRSIM,'IPLTI=',IPLTI
+
 	write(*,*)'LAND: ERROR'
           CALL ERROR(ERRKEY,2,' ',0)
       ENDIF
@@ -422,10 +414,10 @@ C-----------------------------------------------------------------------
         PUptake=LAND_C%PUptake
         ST=LAND_C%ST
         FracRts=PlantL%FracRts
-        XHLAI=LAND_C%XHLAI
+        XHLAI=PLANTL%XHLAI
 
 
-	write(*,*)'LAND:TO SOIL'
+	
       CALL SOIL(CONTROL, ISWITCH, 
      &    ES, FERTDATA, HARVRES, IRRAMT_DSSAT, KTRANS,          !Input
      &    KUptake, OMAData, PUptake, SENESCE, ST,         !Input
@@ -442,6 +434,7 @@ C-----------------------------------------------------------------------
         LAND_C%SomLitC=SomLitC
         LAND_C%SomLitE=SomLItE
         LAND_C%SW=SW
+	SOILPROP%SW=SW
         LAND_C%SWDELTS=SWDELTS
         LAND_C%SWDELTU=SWDELTU
         LAND_C%UPPM=UPPM
@@ -465,7 +458,7 @@ C-----------------------------------------------------------------------
         RWUMX=PlantL%RWUMX
         UH2O=SPAM_DATA%UH2O
         XLAI=PlantL%XLAI
-	write(*,*)'To SPAM'
+
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
      &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
@@ -515,7 +508,7 @@ C----------------------------------------------------------------------
 
 
 
-      write(*,*)'LAND,SEASINIT,TO PLANT'	
+     
 
 
       CALL PLANT(CONTROL, ISWITCH, 
@@ -531,7 +524,7 @@ C----------------------------------------------------------------------
      &    STGDOY, FracRts, UH2O, UNH4, UNO3, XHLAI, XLAI) !Output
 
 
-	write(*,*)'LAND,From PLANT'
+	
 	CALL GET(PlantL)
 
 	SWAT_DATA%FLOOD_N=FLOODN
@@ -559,29 +552,28 @@ C----------------------------------------------------------------------
 
 
 	ELSE
-		write(*,*)'LAND:TO interface_plant'
+		call put(land_c)	
 		call interface_plant
 	END IF	
 C-----------------------------------------------------------------------
 C     Initialize summary output file - possible output from 
 C     various modules.
 C-----------------------------------------------------------------------
-	write(*,*)'LAND to OPSUM'
+	
       IF (IDETS .EQ. 'Y' .OR. IDETS .EQ. 'A') THEN
         CALL OPSUM (CONTROL, ISWITCH, YRPLT)
       ENDIF
 	CALL PUT(PlantL)
 	CALL PUT(LAND_C)
 	CALL PUT(SWAT_DATA)
-	write(*,*)'LAND,SEASINIT OVER'
+	
 C***********************************************************************
 C***********************************************************************
 C     DAILY RATE CALCULATIONS
 C***********************************************************************
       ELSE IF (DYNAMIC .EQ. RATE) THEN
 	CALL GET(SOILPROP)
-	!write(*,*)'LAND,RATE,SOILPROP=',SOILPROP%DLAYR
-	!write(*,*)'LAND,RATE,SOURCE=',PLANT_SOURCE(interface_ihru)
+	
 	CALL GET(PlantL)
 	CAll GET(LAND_C)
 	CALL GET(SWAT_DATA)
@@ -602,34 +594,35 @@ C     Call Operations Management module to determine today's
 C     applications of irrigation, tillage, etc.
 C-----------------------------------------------------------------------
 !MODIFICATION BY JJ
+	if(PlantL%SWFAC>0)THEN
+		MGM_DSSAT(interface_ihru)=2000
+		! Irrication demand
+	END IF
+
 	IF(useSWAT_M)THEN
 
         !IF(PLANTING_DSSAT(interface_ihru).EQ.11)THEN
          !       MGM_DSSAT(interface_ihru)=11
        
 
-	!if(MGM_DSSAT(interface_ihru)>0)THEN
-	!write(*,*)'To management',MGM_DSSAT(interface_ihru),interface_ihru
-	!write(*,*)'Planting_DSSAT(i)=',PLANTING_DSSAT(interface_ihru)
-	!write(*,*)'SOURCE',PLANT_SOURCE(interface_ihru)
-	!END IF
 
-!	write(*,*)'LAND,SOURCE=',PLANT_SOURCE(interface_ihru),
-!     & MGM_DSSAT(interface_ihru),PLANTING_DSSAT(interface_ihru)
 
-!       write(*,*)'LAND,MDATE=',MDATE,'YREND=',YREND
+	!write(*,*)'LAND,SOURCE=',PLANT_SOURCE(interface_ihru),
+        !& MGM_DSSAT(interface_ihru),PLANTING_DSSAT(interface_ihru)
+
+       !write(*,*)'LAND,MDATE=',MDATE,'YREND=',YREND
 
 	!IF(MGM_DSSAT(interface_ihru)==0 .AND. 
-!& PLANTING_DSSAT(interface_ihru)>0)THEN
-!	MGM_DSSAT(interface_ihru)=PLANTING_DSSAT(interface_ihru)
+        !& PLANTING_DSSAT(interface_ihru)>0)THEN
+        !	MGM_DSSAT(interface_ihru)=PLANTING_DSSAT(interface_ihru)
 	!ELSE
 	!	STOP
-!	END IF
+        !	END IF
 	
 	CALL interface_MGMTOPS(SW,ISWITCH,CONTROL,YREND,FERTDATA,HARVFRAC,
      &	IRRAMT_DSSAT,
      & MDATE,OMADATA,TILLVALS,YRPLT,MGM_DSSAT(interface_ihru))
-	
+	!write(*,*)'LAND,RATE,IRRAMT=',IRRAMT_DSSAT
 !	IF(MGM_DSSAT(interface_ihru)==1.OR.MGM_DSSAT(interface_ihru)==3)
 !    & MGM_DSSAT(interface_ihru)=0
 	MGM_DSSAT(interface_ihru)=0
@@ -648,7 +641,7 @@ C-----------------------------------------------------------------------
      &    MDATE, OMADATA, TILLVALS, YRPLT)                !Output
 	END IF
 
-	!write(*,*)'LAND,MDATE=',MDATE,'YREND=',YREND
+	
 	CALL GET(PlantL)
 	PlantL%YREND=YREND
         SWAT_DATA%FERT_DATA=FERTDATA
@@ -673,13 +666,13 @@ C-----------------------------------------------------------------------
         SWDELTX=LAND_C%SWDELTX
         KTRANS=LAND_C%KTRANS
         ES=SPAM_DATA%ES
-        IRRAMT_DSSAT=MGM_DATA%IRRAMT
+        !IRRAMT_DSSAT=MGM_DATA%IRRAMT
         KUptake=LAND_C%KUptake
         PUptake=LAND_C%PUptake
         ST=LAND_C%ST
         FracRts=PlantL%FracRts
-        XHLAI=LAND_C%XHLAI
-
+        XHLAI=PLANTL%XHLAI
+	!write(*,*)'From LAND to SOIL,IRRAMT=',IRRAMT_DSSAT
 C-----------------------------------------------------------------------
 C     Call Soil processes module to determine today's rates of 
 C     change of soil properties.
@@ -705,14 +698,15 @@ C-----------------------------------------------------------------------
         LAND_C%UPPM=UPPM
         LAND_C%WINF=WINF
         SOIL_W%SNOW=SNOW
-
-!	write(*,*)'LAND,SOil water',SW
+	PLANTL%XHLAI=XHLAI
+	
 
 C-----------------------------------------------------------------------
 C     Call Soil-plant-atmosphere module to determine today's
 C     rates of evapotranspiration.
 C-----------------------------------------------------------------------
-        CANHT=Type_Plant%CANHT
+        CANHT=PlantL%CANHT	
+	!CANHT=Type_Plant%CANHT
         EORATIO=PlantL%EORATIO
         KSEVAP=LAND_C%KSEVAP
         PSTRES1=PlantL%PSTRES1
@@ -721,7 +715,7 @@ C-----------------------------------------------------------------------
         RWUMX=PlantL%RWUMX
         UH2O=SPAM_DATA%UH2O
         XLAI=PlantL%XLAI
-!	write(*,*)'EORATIO=',EORATIO
+	XHLAI=PlantL%XHLAI
 
 
 
@@ -741,6 +735,11 @@ C-----------------------------------------------------------------------
         SPAM_DATA%EP=EP
         SPAM_DATA%ES=ES
         LAND_C%EOS=EOS
+
+	!	if(interface_ihru==40)THEN
+	!write(*,*)'LAND:From SPAM,RWU=',RWU,'SOURCE=',
+        !&     PLANT_SOURCE(interface_ihru)
+	!END IF
         LAND_C%RWU=RWU
         LAND_C%SRFTEMP=SRFTEMP
         LAND_C%ST=ST
@@ -760,10 +759,6 @@ C-----------------------------------------------------------------------
 
 
 
-C!      IF (CROP .NE. 'FA' .AND. 
-C!     &    YRDOY .GE. YRPLT .AND. YRPLT .NE. -99) THEN
-C!IF(interface_ihru==2)write(*,*)'LAND,TO PLANT, DYNAMIC=',
-C!& CONTROL%DYNAMIC,'YREMRG=',PlantL%YREMRG
 	IF(CROP.NE.'WA')THEN
 C	! write(*,*)'LAND: To DSSAT PLANT',interface_ihru
 C	!	write(*,*)'IRRAMT_DSSAT=',IRRAMT_DSSAT	
@@ -807,19 +802,17 @@ C	!	write(*,*)'IRRAMT_DSSAT=',IRRAMT_DSSAT
 
 
 
-	!write(*,*)'LAND:To interface_plant'
+	call put(land_c)
 	call interface_plant
-	if(PLANTING_DSSAT(interface_ihru)==110)THEN
-	write(*,*)'AUTO FERT,SWAT SIDE'
-	END IF
-
+	CALL GET(LAND_C)
+	IF(interface_ihru==40)write(*,*)'LAND,RWU=',LAND_C%RWU
 	
 	END IF
 !      ENDIF
 	CALL PUT(PlantL)
 	CALL PUT(LAND_C)
 	CALL PUT(SWAT_DATA)
-	!write(*,*)'AFTER, LAND,RATE, SOILPROP=',SOILPROP%DLAYR
+	CALL PUT(SOILPROP)
 	CALL PUT(SOILPROP)
 C***********************************************************************
 C     DAILY INTEGRATION 
@@ -829,7 +822,7 @@ C***********************************************************************
 	CAll GET(LAND_C)
 	CALL GET(SWAT_DATA)
 	CALL GET(SOILPROP)
-	!write(*,*)'LAND,INTEGR,SOILPROP=',SOILPROP%DLAYR
+	
 	UNH4=PlantL%UNH4
         UNO3=PlantL%UNO3
         UPFLOW=LAND_C%UPFLOW
@@ -841,12 +834,11 @@ C***********************************************************************
         PUptake=LAND_C%PUptake
         ST=LAND_C%ST
         FracRts=PlantL%FracRts
-        XHLAI=LAND_C%XHLAI
+        XHLAI=PlantL%XHLAI
 
 
 
 
-	!write(*,*)'TO SOil'
 C***********************************************************************
 C     Integrate soil state variables
 C-----------------------------------------------------------------------
@@ -859,7 +851,7 @@ C-----------------------------------------------------------------------
      &    SPi_AVAIL, SOILPROP, SomLitC, SomLitE,          !Output
      &    SW, SWDELTS, SWDELTU, UPPM, WINF, YREND)        !Output
 
-	!write(*,*)'LAND, FROM SOIL ',SOILPROP%DLAYR
+	!write(*,*)'LAND, FROM SOIL ',XHLAI
 	LAND_C%NH4_plant=NH4_plant
         LAND_C%NO3_plant=NO3_plant
         LAND_C%SKi_AVAIL=SKi_AVAIL
@@ -867,13 +859,14 @@ C-----------------------------------------------------------------------
         LAND_C%SomLitC=SomLitC
         LAND_C%SomLitE=SomLItE
         LAND_C%SW=SW
+	SOILPROP%SW=SW
         LAND_C%SWDELTS=SWDELTS
         LAND_C%SWDELTU=SWDELTU
         LAND_C%UPPM=UPPM
         LAND_C%WINF=WINF
         SOIL_W%SNOW=SNOW
-
-
+	PlantL%XHLAI=XHLAI
+	
 C-----------------------------------------------------------------------
 C     Compute cumulative totals for soil-plant-atmosphere processes
 C-----------------------------------------------------------------------
@@ -886,10 +879,10 @@ C-----------------------------------------------------------------------
         RWUMX=PlantL%RWUMX
         UH2O=SPAM_DATA%UH2O
         XLAI=PlantL%XLAI
+	XHLAI=PlantL%XHLAI
 
 
-
-	!write(*,*)'To Spam'
+	
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
      &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
@@ -897,7 +890,7 @@ C-----------------------------------------------------------------------
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, RWU, SRFTEMP, ST,         !Output
      &    SWDELTX, TRWU, TRWUP, UPFLOW)                   !Output
-
+	
 
 	        LAND_C%SWDELTX=SWDELTX
         LAND_C%SWDELTU=SWDELTU
@@ -912,21 +905,20 @@ C-----------------------------------------------------------------------
         LAND_C%TRWU=TRWU
         LAND_C%TRWUP=TRWUP
         LAND_C%UPFLOW=UPFLOW
+	PlantL%XHLAI=XHLAI
 
 
-
-	!write(*,*)'To Plant'
+	
 C-----------------------------------------------------------------------
 C     Call Plant module to integrate daily plant processes and update
 C     plant state variables.
 C-----------------------------------------------------------------------
 	IF(CROP.NE.'WA')THEN					
-	!write(*,*)'CROP=',CROP,'YRDOY=',YRDOY,'YRPLT',YRPLT
+	
       IF (CROP .NE. 'FA' .AND. 
      &        YRDOY .GE. YRPLT .AND. YRPLT .NE. -99) THEN
 
-!	write(*,*)'LAND TO DSSAT PLANT',PlantL%WTNLF,'ihru=',
-!     &  interface_ihru
+	
         CALL PLANT(CONTROL, ISWITCH, 
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4_plant, NO3_plant, SKi_Avail, SomLitC, SomLitE, !Input
@@ -939,6 +931,7 @@ C-----------------------------------------------------------------------
      &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
      &    STGDOY, FracRts, UH2O, UNH4, UNO3, XHLAI, XLAI) !Output
 	END IF
+	
 	CALL GET(PlantL)
         Type_Plant%CANHT=CANHT
         PlantL%EORATIO=EORATIO
@@ -960,19 +953,20 @@ C-----------------------------------------------------------------------
 
 
 	ELSE
-	!Write(*,*)'LAND: To interface'
+	call put(LAND_C)
 	CALL interface_plant
+	CALL GET(LAND_C)
+	IF(interface_ihru==40)write(*,*)'LAND:INTEGR,RWU=',LAND_C%RWU
 	END IF
      
-	!write(*,*)'TO Management, useSWAT_M=',useSWAT_M
+	
 C-----------------------------------------------------------------------
 C     Call Operations Management module to check for harvest end, 
 C     accumulate variables.
 C-----------------------------------------------------------------------
 ! MODIFICATION BY JJ
 	IF(useSWAT_M)THEN
-	!write(*,*)'LAND,PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru)
-	!write(*,*)'ihru=',interface_ihru
+	
 	CALL interface_MGMTOPS(SW,ISWITCH,CONTROL,YREND,FERTDATA,HARVFRAC,
      & IRRAMT_DSSAT,
      & MDATE,OMADATA,TILLVALS,YRPLT,MGM_DSSAT(interface_ihru))
@@ -991,8 +985,6 @@ C-----------------------------------------------------------------------
 	CALL PUT(PlantL)
 	CALL PUT(SWAT_DATA)
 	CALL PUT(SOILPROP)
-	!write(*,*)'LAND,INTEGR,END,SOILPROP=',SOILPROP%DLAYR
-	!Write(*,*)'LAND OVER'
 C***********************************************************************
 C***********************************************************************
 C     Daily Output

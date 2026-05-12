@@ -136,14 +136,15 @@
 	
       integer :: j,sb,kk,irrsc_temp
       real :: tmpk, d, gma, ho, pet_alpha, aphu, phuop
+
+	TYPE(LAND_S)::LAND_C
       ihru = 0
       ihru = hru1(inum1) 
       
       call sub_subbasin
       ! Loop over hru's at subbasins start	
       do iihru = 1, hrutot(inum1)
-!	write(*,*)'Counter = ',iihru,'/',hrutot(inum1),'inum1=',inum1
-!	write(*,*)'ihru=',ihru
+
       	j = 0
       	j = ihru
 
@@ -186,7 +187,7 @@
 	if (i_wtrhru == 1) then
         	call water_hru
       	else 
-		!write(*,*)'origSWAT=',origSWAT
+		
         	!! Simulate land covers other than water
 		! MODIFICATION 9.8.2024
 		IF(origSWAT==0)THEN
@@ -555,7 +556,8 @@
 
 	! Model Land cycle using funtions from DSSAT
 			IF(DSSAT_method==1)THEN
-				
+!				write(*,*)'DSSAT'
+!		STOP
 				! Model land cycle utilizing DSSAT LAND subroutine
 				!! update base zero total heat units
 				
@@ -574,7 +576,7 @@
 				!! compute effective rainfall (amount that percs into 	soil)
 				inflpcp = Max(0.,precipday - surfq(j))
 				!if(yr_skip(j)==0)write(*,*)'subbasin.f yr_skip=',yr_skip(j),'phuacc=',phuacc(j)
-				!write(*,*)'yr_skip=',yr_skip(j)
+				!write(*,*)'yr_skip=',yr_skip(j),'call operatn'
 					!! perform management operations
 				if (yr_skip(j) == 0) call operatn
 			        !write(*,*)'subbasin,after operatn,MDATE=',MDATE_interface(j),'ihru=',j
@@ -591,15 +593,20 @@
 			
 				!end if
 				!if(j==1)then
-				!	write(*,*)'auto_wstr=',auto_wstr(j),'irrsc=',irrsc(j)
+			!		write(*,*)'auto_wstr=',auto_wstr(j),'irrsc=',irrsc(j)
+			!		write(*,*)'PLAnT_SOURCE=',PLANT_SOURCE(j)
 				!end if	
 				if (auto_wstr(j) > 1.e-6 .and. irrsc(j) > 2) then
-					!write(*,*)'Subbasin,to autoirr'
+			!		write(*,*)'Subbasin,to autoirr, SOURCE=',PLANT_SOURCE(j)
 					!STOP
-					call autoirr       
+					call autoirr
+					IF(j==27)THEN
+					CALL GET(LAND_C)       
+					write(*,*)'SUBBASIN:RWU=',LAND_C%RWU
+					END IF					
 				endif
 			 				
-       
+       				!write(*,*)'aird(j)=',aird(j),'source=',PLANT_SOURCE(j)
 				!! perform soil water routing
 				call percmain !rtb - changed 2016-2017
 				!! compute water table depth using climate drivers
@@ -649,9 +656,12 @@
 				!if (igro(j) == 1) call dormant
 				if(igro(j) ==1) call interface_dormant
        				!write(*,*)'subbasin,iida=',iida
-	
+				
 				!! compute actual ET for day in HRU
+				IF(PLANT_SOURCE(ihru).EQ.'SWAT')THEN
+				!CALL etact
 				etday = ep_day + es_day + canev
+				END IF
 				etremain(j) = pet_day - etday !added to track leftover ET per hru to be passed from SWAT to MODFLOW-UZF    tcw
 
 				!! compute biozone processes in septic HRUs
@@ -705,7 +715,7 @@
 				ELSE
 					STOP
 				END IF
-				       !write(*,*)'subbasin,LOPPU,iida=',iida,'i=',i
+				      ! write(*,*)'subbasin,LOPPU,iida=',iida,'i=',i
 
 			ELSE
 				! Model land cycle utilizing individual subroutines from DSSAT side

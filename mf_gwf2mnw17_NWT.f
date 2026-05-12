@@ -7,7 +7,8 @@ C                  AWH  20080411      -- Retrieve HDRY from GWFBASMODULE rather 
 C                                        LPF, BCF, or HUF
 C                  RGN  20111001      -- Modified to support UPW; removed BC switching is UPW is used.
 c
-      MODULE GWFMNW1MODULE
+       !MODULE GWFMNW1MODULE
+       MODULE gwfmnw1module 	
         DOUBLE PRECISION, PARAMETER :: TWOPI=2.0D0*3.1415926535897932D0
         DOUBLE PRECISION, PARAMETER :: ZERO25=1.0D-25, ZERO20=1.0D-20
         DOUBLE PRECISION, PARAMETER :: ZERO8=1.0D-8, BIG=1.0D30

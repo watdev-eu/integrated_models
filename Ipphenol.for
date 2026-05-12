@@ -74,7 +74,10 @@ C=======================================================================
       FILEIO  = CONTROL % FILEIO
       LUNIO   = CONTROL % LUNIO
       IF(useSWAT)THEN
-	CALL interface_speciesDATA(FILEC,PATHCR,FILEE,PATHEC)
+	CALL interface_speciesDATA1F(1,FILEC)
+        CALL interface_speciesDATA1F(2,FILEE)
+	CALL interface_speciesDATA1P(PATHEC)
+	PATHCR=PATHEC
         CALL interface_Ipphenol(CROP,PLME,SDEPTH,SDAGE,ATEMP,
      &	ECONO,CSDVAR,PPSEN,PH2T5,HELP)
 	!CROP
@@ -243,8 +246,8 @@ C-----------------------------------------------------------------------
         IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEGC,0)
         ECOTYP = '      '
         LNUM = 0
-	write(*,*)'ECOTYPE',FILEE  
-	write(*,*)'FILEGC=',FILEGC
+	!write(*,*)'ECOTYPE',FILEE  
+	!write(*,*)'FILEGC=',FILEGC
         DO WHILE (ECOTYP .NE. ECONO)
           CALL IGNORE(LUNECO, LNUM, ISECT, C255)
           IF (ISECT .EQ. 1 .AND. C255(1:1) .NE. ' ' .AND.
@@ -255,7 +258,7 @@ C-----------------------------------------------------------------------
      &          (PHTHRS(K),K=11,12), TRIFOL, R1PPO, OPTBI, SLOBI
  3100       FORMAT (A6, 1X, A16, 1X, 2(1X,I2), 7(1X,F5.0), 6X, 
      &          3(1X,F5.0), 2(6X), 3(1X,F5.0))
-	WRITE(*,*)'ECOTYP=', ECOTYP,'       ECONO=',ECONO,'ERR=',ERR
+	!WRITE(*,*)'ECOTYP=', ECOTYP,'       ECONO=',ECONO,'ERR=',ERR
             IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEGC,LNUM)
             IF (ECOTYP .EQ. ECONO) THEN
               EXIT

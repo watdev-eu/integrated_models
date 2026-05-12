@@ -44,9 +44,10 @@
 !!    ~ ~ ~ ~ ~ ~ END SPECIFICATIONS ~ ~ ~ ~ ~ ~
 
       use parm
-
+	Use ModuleDefs
+	Use ModuleData
       integer :: j
-      
+      TYPE(LAND_S) LAND_C
       j = 0
       j = ihru
 
@@ -64,9 +65,12 @@
 
       !! compute plant water use and water stress
       !! compute actual plant transpiration
-!	write(*,*)'plantmod,igro=',igro(j),'j=',j
+	
       if (igro(j) == 1) call swu
- 
+ 	IF(j==40)THEN
+	CALL GET(LAND_C)
+	write(*,*)'plantmod,RWU=',LAND_C%RWU
+	END IF
       if (igro(j) == 1) call grow
 !     write (99,9994) i, hru_ra(j), bio_ms(j), laiday(j),
 !    * strsw(j), strstmp(j), strsn(j), strsp(j)

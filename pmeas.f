@@ -119,15 +119,15 @@
 
             !! read data from file
             if (ifirstpcp(k) == 0) then
-		write(*,*)'kk1=',kk1,' kk2=',kk2,'k=',k,' nrgage=',nrgage
+		!write(*,*)'kk1=',kk1,' kk2=',kk2,'k=',k,' nrgage=',nrgage
   		read (100+k,*) (rmeas2, l = kk1, kk2)
-		write(*,*)rmeas2,'iida=',iida
+		!write(*,*)rmeas2,'iida=',iida
               read (rmeas2,5000) (rmeas(l), l = kk1, kk2)
 
-		write(*,*)'rmeas=',rmeas(1),'l=',l
+		!write(*,*)'rmeas=',rmeas(1),'l=',l
 		!STOP
             else
-		write(*,*)'Here'
+		!write(*,*)'Here'
               ifirstpcp(k) = 0
               do
                 iyp = 0

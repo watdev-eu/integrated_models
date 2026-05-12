@@ -71,7 +71,7 @@ C=======================================================================
       REAL AGRSD1, AGRSD2, AGRVG, AGRVG2
       REAL AGRNOD, AGRSH1
       REAL BETN
-      REAL CANNAA, CANWAA, CDMREP, CGRSH, CGRSD, CNODMN, CO2, CSAVEV
+      REAL CANNAA, CANWAA, CDMREP, CGRSH, CGRSD, CNODMN, DSAT_CO2,CSAVEV
       REAL CNDFX, CTONODR, CTONOD, CAVVEG
       REAL CADPR1, CMOBMX, CMINEP
       REAL CLW, CSW
@@ -204,17 +204,17 @@ C=======================================================================
       ISWWAT = ISWITCH % ISWWAT
       MEPHO  = ISWITCH % MEPHO
 
-      CO2    = WEATHER % CO2   
+      DSAT_CO2    = WEATHER % CO2   
       DAYL   = WEATHER % DAYL  
       PAR    = WEATHER % PAR   
       TAVG   = WEATHER % TAVG  
       TDAY   = WEATHER % TDAY  
       TGRO   = WEATHER % TGRO  
       TGROAV = WEATHER % TGROAV
-      TMIN   = WEATHER % TMIN  
-  !    write(*,*)'CROPGROW,DYNAMIC=',DYNAMIC,'ihru',interface_ihru!
-!	write(*,*)'NH4=',NH4,'NO3=',NO3 
-!	write(*,*)'..............NUTRIENTS at begin...................'   	 
+      TMIN   = WEATHER % TMIN
+
+  
+
 !***********************************************************************
 !***********************************************************************
 !     Run Initialization - Called once per simulation
@@ -247,7 +247,7 @@ C=======================================================================
 
       IF (CROP .NE. 'FA' .AND. MEPHO .EQ. 'C') THEN
         CALL PHOTO(CONTROL, 
-     &    BETN, CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
+     &    BETN, DSAT_CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
      &    NR5, PAR, PStres1, SLPF, RNITP, SLAAD,          !Input
      &    SWFAC, TDAY, XHLAI, XPOD,                       !Input
      &    AGEFAC, PG)                                     !Output
@@ -255,6 +255,7 @@ C=======================================================================
 	CALL GET(PlantF)
 	PlantF%AGEFAC=AGEFAC
 	PlantF%PG=PG
+
 !-----------------------------------------------------------------------
 		NSTRES=PlantF%NSTRES
 		PStres2=PlantF%PStres2
@@ -727,7 +728,7 @@ C-----------------------------------------------------------------------
         ENDIF
 
 !-----------------------------------------------------------------------
-!	write(*,*)'CROPGRO, RUNINIT: To GROW, FRLF=',FRLF
+
 		AGEFAC=PlantF%AGEFAC
 		CADLF=PlantF%CADLF
 		CADST=PlantF%CADST
@@ -821,8 +822,9 @@ C-----------------------------------------------------------------------
      &  WTNSDO, WTNSH, WTNSHA, WTNSHO, WTNSO, WTNST,      !Output
      &  WTNUP, WTRO, WTSDO, WTSHO, WTSO, XLAI, XPOD,      !Output
      &  ShutMob, RootMob, ShelMob)                        !Output
-!	write(*,*)'CROPGROW,SDNPL=',SDNPL
-	!STOP
+      ! write(*,*)'CROPGROW,XHLAI=',XHLAI,'SOURCE=',
+      !& PLANT_SOURCE(interface_ihru)
+	
 	CALL GET(PlantF)
 	 	PlantF%WTSHO=WTSHO
 		PlantF%WTNSO=WTNSO
@@ -990,7 +992,7 @@ C-----------------------------------------------------------------------
 
       KSTRES = 1.0
 	CALL GET(PlantF)
-	write(*,*)'BEGINNIN OF SEASINIT'
+	!write(*,*)'BEGINNIN OF SEASINIT'
 !	write(*,*)'interface_ihru=',interface_ihru
 	PlantF%CMINEP=CMINEP
 	PlantF%CNOD=CNOD
@@ -1015,13 +1017,13 @@ C-----------------------------------------------------------------------
           CALL GET('SPAM', 'PG'    , PG)
         ELSEIF (MEPHO .EQ. 'C') THEN
           CALL PHOTO(CONTROL, 
-     &    BETN, CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
+     &    BETN, DSAT_CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
      &    NR5, PAR, PStres1, SLPF, RNITP, SLAAD,          !Input
      &    SWFAC, TDAY, XHLAI, XPOD,                       !Input
      &    AGEFAC, PG)                                     !Output
         ENDIF
       ENDIF
-	write(*,*)'CROP:TO PHENOL'
+	!write(*,*)'CROP:TO PHENOL'
 !-----------------------------------------------------------------------
 	CALL GET(PlantF)
 		NSTRES=PlantF%NSTRES
@@ -1075,7 +1077,7 @@ C     Initialize pest coupling point and damage variables
 !     Need to initialize even if pests are not being modelled this
 !     season - zero out values from last simulation.
 !-----------------------------------------------------------------------
-                write(*,*)'CROP:To PEST'
+                !write(*,*)'CROP:To PEST'
 		AREALF=PlantF%AREALF
 		CLW=PlantF%CLW
 		CSW=PlantF%CSW
@@ -1182,7 +1184,7 @@ C     Initialize pest coupling point and damage variables
 		NR2=PlantF%NR2
 		NR5=PlantF%NR5
 		NR7=PlantF%NR7
- 	write(*,*)'CROP:TO DEMAND' 
+  
         CALL DEMAND(SEASINIT, CONTROL,
      &  AGRLF, AGRRT, AGRSH2, AGRSTM, CROP, DRPP, DXR57,  !Input
      &  FILECC, FILEGC, FILEIO, FNINSH, FRACDN, LAGSD,    !Input
@@ -1235,7 +1237,7 @@ C     Initialize pest coupling point and damage variables
 !     This call must preceed initialization call to GROW (need to
 !         initialize value of SDPROR for use in that routine) chp 9/22/98
 !-----------------------------------------------------------------------
-    	write(*,*)'CROP:INCOMP'
+    
 	  IF (CROP .NE. 'FA') THEN
 	FRLF=PlantF%FRLF
 	FRRT=PlantF%FRRT
@@ -1259,7 +1261,7 @@ C     Initialize pest coupling point and damage variables
 	PlantF%SDPROR=SDPROR
 	CALL PUT(PlantF)
 !-----------------------------------------------------------------------
-	write(*,*)'CROPGRO, SEASINIT:TO GROW, FRLF=',FRLF
+
 		AGEFAC=PlantF%AGEFAC
 		CADLF=PlantF%CADLF
 		CADST=PlantF%CADST
@@ -1353,7 +1355,7 @@ C     Initialize pest coupling point and damage variables
      &  ShutMob, RootMob, ShelMob)                        !Output
 
 !	write(*,*)'CROPGROW SEASINIT, SDNPL',SDNPL
-	!STOP
+	
 	CALL GET(PlantF)
 			PlantF%WTSHO=WTSHO
 		PlantF%WTNSO=WTNSO
@@ -1465,7 +1467,7 @@ C     Initialize pest coupling point and damage variables
 		PlantF%DWNOD=DWNOD
 	CALL PUT(PlantF)
 !-----------------------------------------------------------------------
-	write(*,*)'CROP:TO NUPTAK'
+	!write(*,*)'CROP:TO NUPTAK'
 	NDMSDR=PlantF%NDMSDR
 	NDMTOT=PlantF%NDMTOT
 	RLV=PlantF%RLV
@@ -1481,7 +1483,7 @@ C     Initialize pest coupling point and damage variables
 	PlantF%UNH4=UNH4
 	PlantF%UNO3=UNO3
 	CALL PUT(PlantF)
-	write(*,*)'CROP: TO P_CGRO'
+	!write(*,*)'CROP: TO P_CGRO'
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!	
 !     Plant phosphorus module initialization
 	MDATE=PlantF%MDATE
@@ -1526,7 +1528,7 @@ C     Initialize pest coupling point and damage variables
 	PlantF%FracRts=FracRts
 	CALL PUT(PlantF)
 !-----------------------------------------------------------------------
-	write(*,*)'CROP:TO MOBIL'
+
 	NDMNEW=PlantF%NDMNEW
 	NMINEP=PLantF%NMINEP
 	NMOBR=PlantF%NMOBR
@@ -1548,7 +1550,7 @@ C     Initialize pest coupling point and damage variables
 	PlantF%NRUSST=NRUSST
 	CALL PUT(PlantF)
 !-----------------------------------------------------------------------
-	write(*,*)'CROP;TO NFIX'
+
 	CALL GET(PlantF)
 		AGRNOD=PlantF%AGRNOD
 		CNODMN=PlantF%CNODMN
@@ -1573,7 +1575,7 @@ C     Initialize pest coupling point and damage variables
 		PlantF%SENNOD=SENNOD
 	CALL PUT(PlantF)
 !-----------------------------------------------------------------------
-	write(*,*)'CROP:TO PODS'
+
 		AGRSH1=PlantF%AGRSH1
 		FNINSH=PlantF%FNINSH
 		NAVL=PlantF%NAVL
@@ -1623,7 +1625,6 @@ C     Initialize pest coupling point and damage variables
 		PLantF%FLWN=FLWN
 	CALL PUT(plantF)
 !-----------------------------------------------------------------------
-	write(*,*)'CROP:TO VEGGR'
 		CMINEP=PlantF%CMINEP
 		CSAVEV=PlantF%CSAVEV
 		DTX=PlantF%DTX
@@ -1697,7 +1698,6 @@ C     Initialize pest coupling point and damage variables
 !-----------------------------------------------------------------------
 C     Call leaf senescence routine for initialization
 C-----------------------------------------------------------------------
-	write(*,*)'CROP:TO SENES'
 
 	CLW=PlantF%CLW
 	DTX=PlantF%DTX
@@ -1753,7 +1753,7 @@ C-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 !     Write headings to output file GROWTH.OUT
 !-----------------------------------------------------------------------
-	write(*,*)'CROP: to OPGROW'
+
       CALL OPGROW(CONTROL, ISWITCH, SoilProp,  
      &    CADLF, CADST, CANHT, CANWH, CMINEA, DWNOD, GROWTH,  
      &    GRWRES, KSTRES, MAINR, MDATE, NFIXN, NLAYR, NSTRES, 
@@ -1828,9 +1828,6 @@ C-----------------------------------------------------------------------
 	RWUMX=PlantF%RWUMX
 	TTFIX=PlantF%TTFIX
 	YREMRG=PlantF%YREMRG
-	IF(interface_ihru==2)THEN
-   	write(*,*)'YRDOY=',YRDOY,'YREMRG=',YREMRG
-	END IF
 	  IF (YRDOY .GT. YREMRG .AND. YREMRG .GT. 0 
      &                    .AND. ISWWAT .EQ. 'Y') THEN
 !       Calculate daily water stess factors (from SWFACS)
@@ -1984,12 +1981,13 @@ C-----------------------------------------------------------------------
 	XHLAI=PlantF%XHLAI
 	XPOD=PlantF%XPOD
           CALL PHOTO(CONTROL, 
-     &    BETN, CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
+     &    BETN, DSAT_CO2, DXR57, EXCESS, KCAN, KC_SLOPE,       !Input
      &    NR5, PAR, PStres1, SLPF, RNITP, SLAAD,          !Input
      &    SWFAC, TDAY, XHLAI, XPOD,                       !Input
      &    AGEFAC, PG)                                     !Output
         ENDIF
       ENDIF
+	
        PlantF%AGEFAC=AGEFAC
        PlantF%PG=PG
        
@@ -2006,7 +2004,7 @@ C-----------------------------------------------------------------------
 !	write(*,*)'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
 !	write(*,*)'TO INTEGROINTI'	
 	CALL GET(PlantF)
-	!write(*,*)'INTEGR,interface_ihru=',interface_ihru,'NVEG0=',NVEG0
+	
 	NVEG0=PlantF%NVEG0
 	DETACH=PlantF%DETACH
 	NSTRES=PlantF%NSTRES
@@ -2090,12 +2088,15 @@ C-----------------------------------------------------------------------
 	CALL PUT(PlantF)
 !	write(*,*)'Before EMERGENSE DAS=',DAS,'NVEG0=',
 !     & NVEG0,interface_ihru
-	IF(interface_ihru==2)write(*,*)'DAS=',DAS,'NVEG0=',NVEG0
+	!write(*,*)'DAS=',DAS,'NVEG0=',NVEG0,interface_ihru
 !-----------------------------------------------------------------------
       IF (DAS .EQ. NVEG0) THEN
 	!CALL GET(PlantF)
-	!write(*,*)'CROPGROW,EMERG,BEF,PlantF%AREALF=',PlantF%AREALF,NVEG0
-	!IF(interface_ihru==39)STOP
+	IF(CROP.EQ.'LE')THEN
+	write(*,*)'CROPGROW,EMERG,PlantF%AREALF=',PlantF%AREALF,NVEG0
+	END IF
+	
+	
 !----------------------------------------------------------------------
 !     On day of emergence, initialize:
 !-----------------------------------------------------------------------
@@ -2109,6 +2110,7 @@ C-----------------------------------------------------------------------
 	DISLA=PlantF%DISLA
 	F=PlantF%F
 	FRLF=PlantF%FRLF
+	IF(CROP.EQ.'LE')write(*,*)'GROPGROW,EMERGENSE,FRLF=',FRLF
 	FRSTM=PlantF%FRSTM
 	NADLF=PlantF%NADLF
 	NADRT=PlantF%NADRT
@@ -2162,7 +2164,7 @@ C-----------------------------------------------------------------------
 	WSHIDT=PlantF%WSHIDT
 	WTNFX=PlantF%WTNFX
 	XHLAI=PlantF%XHLAI	
-	write(*,*)'CROPGROW,TO GROW_DSSAT,EMERGENCE'
+	
         CALL GROW_DSSAT(CONTROL, ISWITCH, EMERG, SOILPROP, 
      &  AGEFAC, CADLF, CADST, CRUSLF, CRUSRT, CRUSSH,     !Input
      &  CRUSST, DISLA, F, FILECC, FRLF, FRSTM,            !Input
@@ -2191,10 +2193,12 @@ C-----------------------------------------------------------------------
      &  WTNSDO, WTNSH, WTNSHA, WTNSHO, WTNSO, WTNST,      !Output
      &  WTNUP, WTRO, WTSDO, WTSHO, WTSO, XLAI, XPOD,      !Output
      &  ShutMob, RootMob, ShelMob)                        !Output
-!	write(*,*)'FROM GROW,WTNTOT=',WTNTOT
-	!STOP
+	!IF(CROP.EQ.'LE')THEN
+	!write(*,*)'FROM GROW,XHLAI=',XHLAI,'GROWTH=',GROWTH
+	!write(*,*)'i=',interface_ihru
+	!END IF
 	CALL GET(PlantF)		
-        write(*,*)'FROM GROW,WTNTOT=',PlantF%WTNTOT,PlantF%WTNLF
+        !write(*,*)'FROM GROW,WTNTOT=',PlantF%WTNTOT,PlantF%WTNLF
 
 	PlantF%WTSHO=WTSHO
 	PlantF%WTNSO=WTNSO
@@ -2305,7 +2309,7 @@ C-----------------------------------------------------------------------
 	PlantF%CSW=CSW
 	PlantF%DWNOD=DWNOD	
 	CALL PUT(PlantF)
-!	write(*,*)'GROPGROW,EMERGENSE,AFT,GROWTH',GROWTH
+	IF(CROP.EQ.'LE')write(*,*)'GROPGROW,EMERGENSE,AFT,GROWTH',GROWTH
 
 C-----------------------------------------------------------------------
 C     Call to root growth and rooting depth routine
@@ -2354,6 +2358,8 @@ C-----------------------------------------------------------------------
 	PCNRT=PlantF%PCNRT
 	PCNST=PlantF%PCNST
 	PGAVL=PlantF%PGAVL
+	write(*,*)'CROPGROW,PGAVL=',PGAVL
+	write(*,*)'PGPGPGPGPGPGPGPGPGPGPGPGPGPGPGPG'
 	PUNCSD=PlantF%PUNCSD
 	PUNCTR=PlantF%PUNCTR
 	PLTPOP=PlantF%PLTPOP
@@ -2386,6 +2392,7 @@ C-----------------------------------------------------------------------
 	NR2=PlantF%NR2
 	NR5=PlantF%NR5
 	NR7=PlantF%NR7
+	
         CALL DEMAND(EMERG, CONTROL, 
      &  AGRLF, AGRRT, AGRSH2, AGRSTM, CROP, DRPP, DXR57,  !Input
      &  FILECC, FILEGC, FILEIO, FNINSH, FRACDN, LAGSD,    !Input
@@ -2400,6 +2407,7 @@ C-----------------------------------------------------------------------
      &  GRRAT1, NDMNEW,  NDMOLD, NDMREP, NDMSDR, NDMTOT,  !Output
      &  NDMVEG, NMINEP, NMOBR, PHTIM, PNTIM, POTCAR,      !Output
      &  POTLIP, SDGR, TURADD, XFRT, YREND)                !Output
+	!write(*,*)'CROPGROW,INTEG,FROM DEMAND'
 	CALL GET(PlantF)
 	PlantF%NMOBR=NMOBR
 	PlantF%PHTIM=PHTIM
@@ -2515,7 +2523,7 @@ C-----------------------------------------------------------------------
 	FRLF=PlantF%FRLF
 	FRRT=PlantF%FRRT
 	FRSTM=PlantF%FRSTM
-!	write(*,*)'TO VEGGR,FRLF=',FRLF,NAVL,'NSTRES=',NSTRES	
+	!write(*,*)'CROPGRO,INTEG,TO VEGGR,FRLF='	
         CALL VEGGR(EMERG, 
      &    AGRLF, AGRRT, AGRSTM, CMINEP, CSAVEV, DTX,      !Input
      &    DXR57, ECONO, FILECC, FILEGC, FNINL, FNINR,     !Input
@@ -2532,7 +2540,7 @@ C-----------------------------------------------------------------------
 	IF(NSTRES==0)THEN
 		PLANTING_DSSAT(interface_ihru)=11
 !	write(*,*)'CROPGROW EMERGENSE :interface_ihru=',interface_ihru
-	!STOP
+
 	END IF
 	IF(TURFAC==0)THEN
 		PLANTING_DSSAT(interface_ihru)=1
@@ -2605,10 +2613,13 @@ C-----------------------------------------------------------------------
 	PlantF%PUptake=PUptake
 	plantF%FracRts=FracRts
 	CALL PUT(PlantF)
-	
+	!write(*,*)'GROWTH=',PlantF%Growth,'XHLAI=',PlantF%XHLAI
+	!write(*,*)'TOPWT',PlantF%TOPWT
+
 !-----------------------------------------------------------------------
-      ENDIF
-!	write(*,*)'CROPGROW,INT, PlantF%AREALF=',PlantF%AREALF
+      ENDIF    ! EMERGENCE ENDS
+		
+	!WRITE(*,*)'TOPWT',PlantF%TOPWT,'i=',interface_ihru
 !----------------------------------------------------------------------
 	YRNR2=PlantF%YRNR2
       IF (DETACH .EQ. 'Y' .AND. DAS .LE. NVEG0+1) THEN
@@ -2631,14 +2642,14 @@ C-----------------------------------------------------------------------
         PlantF%WTSHE=WTSHE
 	CALL PUT(PlantF)
       ENDIF
-!	write(*,*)'DAS=',DAS,'NVEG0=',NVEG0
+	!write(*,*)'CROPGROW,INTEG,DAS=',DAS,'NVEG0=',NVEG0
 !***********************************************************************
 C     Skip growth processes and N and C balances before plants emerge
 C-----------------------------------------------------------------------
       IF (DAS .GE. NVEG0) THEN
 	CALL GET(PlantF)
-!	write(*,*)'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
-!	write(*,*)'CROPGROW,INTEG, PlantF%FRLF=',PlantF%FRLF
+
+
 	
 !-----------------------------------------------------------------------
 !     Initialize available N and C for beginning of daily calcs.
@@ -2647,6 +2658,7 @@ C-----------------------------------------------------------------------
       PGAVL = 0.0
 	PlantF%NAVL=NAVL
 	PlantF%PGAVL=PGAVL
+	PG=PlantF%PG
 C-----------------------------------------------------------------------
 C    Initialize variables that represent N and C availability during a day
 C    Assume that Fraction CMOBMX of CH2O can be Mobilized per Day
@@ -2657,13 +2669,10 @@ C    AND TO BE SENSITIVE TO TEMPERATURE PRIOR TO R5 STAGE, BUT
 C    STILL WANT THE SPEED-UP CAUSED BY THE "+ DXR57" FEATURE AFTER R5.
 C
 C-----------------------------------------------------------------------
-	CMOBMX=PlantF%CMOBMX
+      CMOBMX=PlantF%CMOBMX
       CMINEP = CMOBMX * (DTX + DXR57) * (WCRST + WCRRT + WCRSH +WCRLF)
       PGAVL = PG + CMINEP
-!     ! write(*,*)'CROPGROW:INTEG,PGAVL',PGAVL,'PG=',PG,'CMINEP=',CMINEP
-!     ! write(*,*)'CMOBMX=',CMOBMX,'DTX=',DTX,'DXR57=',DXR57
-!     ! write(*,*)'WCRST=',WCRST,'WCRRT=',WCRRT,
-!     !& 'WCRSH=',WCRSH,'WCRLF=',WCRLF
+      
 	PlantF%CMINEP=CMINEP
 	PlantF%PGAVL=PGAVL
 	CALL PUT(PlantF)			
@@ -2691,7 +2700,6 @@ C-----------------------------------------------------------------------
 	PlantF%MAINR=MAINR
 	PlantF%PGAVL=PGAVL
 	CALL PUT(PlantF)
-!	write(*,*)'CROPGROWTH,PGAVL=',PGAVL,'MAINR=',MAINR
 !-----------------------------------------------------------------------
 !     Reduce PGAVL if pest damage occurs to C assimilation
 !     Moved to PEST module - chp
@@ -2756,8 +2764,6 @@ C-----------------------------------------------------------------------
 	PlantF%SDWT=SDWT
 	CALL PUT(PlantF)
       ENDIF
-!	WRITE(*,*)'CROPGROW,INTEG,From PEST AREALF=',AREALF
-!	write(*,*)'PlantF%AREALF=',PlantF%AREALF
 C-----------------------------------------------------------------------
 C    Call Subroutine to calculate Nitrogen and Carbon Demand for new growth
 C-----------------------------------------------------------------------
@@ -2809,7 +2815,8 @@ C-----------------------------------------------------------------------
 	NR2=PlantF%NR2
 	NR5=PlantF%NR5
 	NR7=PlantF%NR7
-!	write(*,*)'To DEMAND,FRLF=',FRLF
+!
+
       CALL DEMAND(INTEGR, CONTROL, 
      &  AGRLF, AGRRT, AGRSH2, AGRSTM, CROP, DRPP, DXR57,  !Input
      &  FILECC, FILEGC, FILEIO, FNINSH, FRACDN, LAGSD,    !Input
@@ -2824,7 +2831,7 @@ C-----------------------------------------------------------------------
      &  GRRAT1, NDMNEW,  NDMOLD, NDMREP, NDMSDR, NDMTOT,  !Output
      &  NDMVEG, NMINEP, NMOBR, PHTIM, PNTIM, POTCAR,      !Output
      &  POTLIP, SDGR, TURADD, XFRT, YREND)                !Output
-!	write(*,*)'From DEMAND,FRLF=',FRLF
+	
 	CALL GET(PlantF)
 		PlantF%NMOBR=NMOBR
 		PlantF%PHTIM=PHTIM
@@ -2866,10 +2873,8 @@ C    Compute N Available From Seed, During Early Growth
 C-----------------------------------------------------------------------
 	
 	SDNPL=PlantF%SDNPL
-!	write(*,*)'SDNPL=',SDNPL
-	!STOP
 	NAVL=PlantF%NAVL
-!	write(*,*)'CROPGROW,SDNPL=',SDNPL,'NAVL=',NAVL
+
       IF (SDNPL .GT. 0.0001) THEN
         NAVL = MAX(SDNPL * DTX / 7. , 0.0)
         SDNPL = SDNPL - NAVL
@@ -2877,7 +2882,7 @@ C-----------------------------------------------------------------------
         SDNPL = 0.0
         NAVL = 0.0
       ENDIF
-!	write(*,*)'CROPGROW:SDNPL=',SDNPL,'DTX=',DTX,'NAVL=',NAVL
+
 	
        PlantF%NAVL=NAVL	
 	   PlantF%SDNPL=SDNPL
@@ -2897,7 +2902,7 @@ C-----------------------------------------------------------------------
      &    DLAYR, DUL, FILECC, KG2PPM, LL, NDMSDR, NDMTOT, !Input
      &    NH4, NO3, NLAYR, RLV, SAT, SW,                  !Input
      &    TRNH4U, TRNO3U, TRNU, UNH4, UNO3)               !Output
-!	write(*,*)'CROPGROW FROM NUPTAK'!
+	
 !	write(*,*)'NH4=',NH4,'NO3=',NO3
 !	write(*,*)'Plant Uptake,UNH4=',UNH4,'UNO3=',UNO3
 !	write(*,*)'TRNH4U=',TRNH4U,'TRNO3U=',TRNO3U
@@ -3279,7 +3284,7 @@ C-----------------------------------------------------------------------
 		FRLF=PlantF%FRLF
 		FRRT=PlantF%FRRT
 		FRSTM=PlantF%FRSTM	
-!	Write(*,*)'To VEGGR2,FRLF=',FRLF
+
       CALL VEGGR(INTEGR, 
      &    AGRLF, AGRRT, AGRSTM, CMINEP, CSAVEV, DTX,      !Input
      &    DXR57, ECONO, FILECC, FILEGC, FNINL, FNINR,     !Input
@@ -3293,10 +3298,11 @@ C-----------------------------------------------------------------------
      &    CRUSRT, CRUSSH, CRUSST, EXCESS, NADLF, NADRT,   !Output
      &    NADST, NGRLF, NGRRT, NGRST, NSTRES,             !Output
      &    TNLEAK, WLDOTN, WRDOTN, WSDOTN)                 !Output
+
+	
 	IF(NSTRES==0)THEN
 		PLANTING_DSSAT(interface_ihru)=11
-		write(*,*)'CROPGROW,NSTRES=',NSTRES,'ihru=',interface_ihru
-		write(*,*)'WTNTOT=',PlantF%WTNTOT
+		
 		!write(*,*)'----------------------------------------------'
 		!write(*,*)'*                                             '
 		!write(*,*)'*                                             '
@@ -3304,7 +3310,7 @@ C-----------------------------------------------------------------------
 		write(*,*)'DAS=',DAS,'ihru=',interface_ihru,'CROP=',CROP	
 		!STOP
 	END IF
-	!write(*,*)'From VEGGR2,FRLF=',FRLF
+	
 	CALL GET(PlantF)
 		PlantF%AGRVG=AGRVG
 		PlantF%FRLF=FRLF
@@ -3358,6 +3364,7 @@ C-----------------------------------------------------------------------
 	PlantF%NAVL=NAVL
 	PlantF%PGAVL=PGAVL
 	CALL PUT(PlantF)
+
 C-----------------------------------------------------------------------
 C     Call leaf senescence routine to compute leaf loss variables
 C-----------------------------------------------------------------------
@@ -3428,7 +3435,7 @@ C     Call to root growth and rooting depth routine
      &    SAT, SW, SWFAC, VSTAGE, WR, WRDOTN, WTNEW,      !Input
      &    RLV, RTDEP, SATFAC, SENRT, SRDOT)               !Output
 
-!	write(*,*)'CROPGRO,From ROOTS,SATFAC=',SATFAC
+!	write(*,*)'CROPGRO,INTEG,EMERG,,From ROOTS,SATFAC=',SATFAC
 !	write(*,*)'ROOTSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'
 	CALL GET(PlantF)
 	PlantF%RLV=RLV
@@ -3568,6 +3575,7 @@ C-----------------------------------------------------------------------
 		WSHIDT=PlantF%WSHIDT
 		WTNFX=PlantF%WTNFX
 		XHLAI=PlantF%XHLAI	
+		!write(*,*)'CROPGROW,INTEG,TO GROW_DSSAT'
       CALL GROW_DSSAT(CONTROL, ISWITCH, INTEGR, SOILPROP, 
      &  AGEFAC, CADLF, CADST, CRUSLF, CRUSRT, CRUSSH,     !Input
      &  CRUSST, DISLA, F, FILECC, FRLF, FRSTM,            !Input
@@ -3598,7 +3606,7 @@ C-----------------------------------------------------------------------
      &  ShutMob, RootMob, ShelMob)                        !Output
 	 
 	 CALL GET(PlantF)
-	!write(*,*)'CROPGROW.INTEG.WTNTOT=',PlantF%WTNTOT,interface_ihru
+	
 	 PlantF%WTSHO=WTSHO
 	PlantF%WTNSO=WTNSO
 	PlantF%WTNST=WTNST
@@ -3709,8 +3717,10 @@ C-----------------------------------------------------------------------
 	PlantF%DWNOD=DWNOD
 	CALL PUT(PlantF)
 	!CALL GET(PlantF)
-!	write(*,*)'CROPGROW,AFTER,AREALF=',AREALF
-!	write(*,*)'AFTER,PlantG%AREALF=',PlantF%AREALF
+	!write(*,*)'CROPGROW,AFTER,AREALF=',AREALF
+	!write(*,*)'AFTER,PlantF%AREALF=',PlantF%AREALF
+	!write(*,*)'GROWTH=',GROWTH
+	!write(*,*)'TOPWT=',PlantF%TOPWT
 	
       IF ((WTLF+STMWT).GT. 0.0001) THEN
         PCNVEG = (WTNLF+WTNST)/(WTLF+STMWT)*100.
@@ -4005,7 +4015,7 @@ C-----------------------------------------------------------------------
 ! CNOD      C used in N-Fixation and nodule growth (including respiration 
 !             costs) today (g[CH2O] / m2 / d)
 ! CNODMN    Minimum C reserved for nodule growth (g[CH2O] / m2 / d)
-! CO2       Atmospheric carbon dioxide concentration (µmol[CO2] / mol[air])
+! DSAT_CO2       Atmospheric carbon dioxide concentration (µmol[CO2] / mol[air])
 ! CONTROL   Composite variable containing variables related to control 
 !             and/or timing of simulation.    See Appendix A. 
 ! CROP      Crop identification code 

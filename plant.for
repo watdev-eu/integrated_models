@@ -116,7 +116,7 @@ C-----------------------------------------------------------------------
       INTEGER YREND, MDATE, YRPLT  !, YRSIM, YREMRG
       INTEGER STGDOY(20)
 
-      REAL CANHT, CO2, DAYL, EO, EOP, EORATIO, EOS, EP, ES
+      REAL CANHT, DSAT_CO2, DAYL, EO, EOP, EORATIO, EOS, EP, ES
       REAL KCAN, KEP, KSEVAP, KTRANS, LAI, NSTRES
       REAL PORMIN, RWUEP1, RWUMX, SRFTEMP, SNOW, IRRAMT
       REAL TMAX, TMIN, TRWU
@@ -171,7 +171,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 
       MEEVP  = ISWITCH % MEEVP
       BUNDED = FLOODWAT % BUNDED
-      CO2    = WEATHER % CO2
+      DSAT_CO2    = WEATHER % CO2
       DAYL   = WEATHER % DAYL
       PAR    = WEATHER % PAR
       SRAD   = WEATHER % SRAD
@@ -181,8 +181,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
       TMAX   = WEATHER % TMAX
       TMIN   = WEATHER % TMIN
       TWILEN = WEATHER % TWILEN
-!	write(*,*)'Inside PLANT routine, DYNAMIC=',DYNAMIC
-!	write(*,*)'RUNINIT=',RUNINIT
+
 !***********************************************************************
 !***********************************************************************
       IF (DYNAMIC .EQ. RUNINIT) THEN
@@ -192,7 +191,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !       in the future, we need to make this check on a crop by crop basis.
 !     The plant routines do not use these codes, but the SPAM module
 !       does and it will bomb when species parameters are not found.
-!	write(*,*)'MODEL',TRIM(MODEL),'MEPHO=',ISWITCH%MEPHO
+
       IF (INDEX(MODEL,'CRGRO') <= 0 .and. index(model,'PRFRM') <= 0
      &  .AND. ISWITCH % MEPHO .EQ. 'L') THEN
         ISWITCH % MEPHO = 'C'
@@ -283,7 +282,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !***********************************************************************
 !***********************************************************************
       ELSEIF (DYNAMIC .EQ. SEASINIT) THEN
-	write(*,*)'PLANT:SEASINIT'
+	
 !-----------------------------------------------------------------------
 !     If this is not a sequenced run, don't use any previously calculated
 !       harvest residue.
@@ -321,7 +320,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
       SENESCE % ResWt  = 0.0
       SENESCE % ResLig = 0.0
       SENESCE % ResE   = 0.0
-	write(*,*)'PLANT:SEASINIT OVER'
+
 !***********************************************************************
 !***********************************************************************
       ELSEIF (DYNAMIC .EQ. RATE) THEN
@@ -347,14 +346,13 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 
 !***********************************************************************
 !***********************************************************************
-!	write(*,*)'PLANT TO CROP MODELS','MODEL:',MODEL(1:5)
+     
 !     Call crop models for all values of DYNAMIC:
 
       SELECT CASE (MODEL(1:5))
 !-----------------------------------------------------------------------
 !     CROPGRO model
       CASE('CRGRO')
-!	write(*,*)'TO CROPGRO'
         CALL CROPGRO(CONTROL, ISWITCH,
      &    EOP, HARVFRAC, NH4, NO3, SOILPROP, SPi_AVAIL,   !Input
      &    ST, SW, TRWUP, WEATHER, YREND, YRPLT,           !Input
@@ -362,7 +360,6 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
      &    NSTRES, PSTRES1,                                !Output
      &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
      &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
-!	write(*,*)'From GROPGRO'
 !-----------------------------------------------------------------------
 !     Forage model
       CASE('PRFRM')
@@ -477,7 +474,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !     Millet
       CASE('MLCER')
         CALL ML_CERES (CONTROL, ISWITCH,
-     &     CO2, DAYL, EOP, HARVFRAC, NH4, NO3,            !Input
+     &     DSAT_CO2, DAYL, EOP, HARVFRAC, NH4, NO3,            !Input
      &     SNOW, SOILPROP, SRAD, SW, TMAX, TMIN,          !Input
      &     TRWUP, TWILEN, YREND, YRPLT,                   !Input
      $     CANHT, HARVRES, MDATE, NSTRES, PORMIN, RLV,    !Output
@@ -529,7 +526,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !     Potato
       CASE('PTSUB')
         CALL PT_SUBSTOR(CONTROL, ISWITCH,
-     &    CO2, EOP, HARVFRAC, NH4, NO3, SOILPROP, SRAD,   !Input
+     &    DSAT_CO2, EOP, HARVFRAC, NH4, NO3, SOILPROP, SRAD,   !Input
      &    ST, SW, TMAX, TMIN, TRWUP, TWILEN, YREND, YRPLT,!Input
      &    CANHT, HARVRES, MDATE, NSTRES, PORMIN, RLV,     !Output
      &    RWUMX, SENESCE, STGDOY, UNH4, UNO3, XLAI)       !Output
@@ -542,7 +539,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !     Rice
       CASE('RICER')
         CALL RICE(CONTROL, ISWITCH,
-     &    CO2, DAYL, EOP, FLOODWAT, HARVFRAC, NH4, NO3,   !Input
+     &    DSAT_CO2, DAYL, EOP, FLOODWAT, HARVFRAC, NH4, NO3,   !Input
      &    SKi_Avail, SPi_AVAIL,                           !Input
      &    SOILPROP, SRAD, ST, SW, TMAX, TMIN, TRWUP,      !Input
      &    TWILEN, YRPLT,                                  !Input
@@ -591,7 +588,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
       !  MJ added SATFAC Jan 2018
         CALL SC_CNGRO (
      &    CONTROL, ISWITCH,                                   !Input
-     &    CO2, DAYL, EOP, EP, EO, ES, HARVFRAC, NH4, NO3, SNOW,   !Input
+     &    DSAT_CO2, DAYL, EOP, EP, EO, ES, HARVFRAC, NH4, NO3, SNOW,   !Input
      &    SOILPROP, SRAD, SW, TMAX, TMIN, TRWUP, TRWU, EOS,   !Input
      &    RWUEP1, TWILEN, YREND, YRPLT, WEATHER, IRRAMT,      !Input
      $    CANHT, HARVRES, KCAN, KTRANS, MDATE, NSTRES,        !Output
@@ -607,7 +604,7 @@ c     Total LAI must exceed or be equal to healthy LAI:
       CASE('SCSAM')
           call SAMUCA(
      &    CONTROL, ISWITCH,                                      !Input
-     &    CO2, DAYL, EOP, EP, EO, ES, HARVFRAC, NH4, NO3, SNOW,  !Input
+     &    DSAT_CO2, DAYL, EOP, EP, EO, ES, HARVFRAC, NH4, NO3, SNOW,  !Input
      &    SOILPROP, ST, SRAD, SW, TMAX, TMIN, TRWUP, TRWU, EOS,  !Input
      &    RWUEP1, TWILEN, YREND, YRPLT, WEATHER, IRRAMT,         !Input
      $    CANHT, HARVRES, KCAN, KTRANS, MDATE, NSTRES,           !Output
@@ -618,7 +615,7 @@ c     Total LAI must exceed or be equal to healthy LAI:
 !     Sugarcane - CASUPRO
       CASE('SCCSP')
         CALL CSP_CASUPRO(CONTROL, ISWITCH,
-     &    CO2, EOP, EOS, HARVFRAC, NH4, NO3, PAR,           !Input
+     &    DSAT_CO2, EOP, EOS, HARVFRAC, NH4, NO3, PAR,           !Input
      &    SOILPROP, SPi_AVAIL, SW, TAVG, TGRO,              !Input
      &    TGROAV, TMIN, TRWUP, WEATHER, YREND, YRPLT,       !Input
      &    CANHT, EORATIO, HARVRES, KTRANS, LFmntDEF, MDATE, !Output
@@ -629,7 +626,7 @@ c     Total LAI must exceed or be equal to healthy LAI:
 !     Sorghum
       CASE('SGCER')
         CALL SG_CERES (CONTROL, ISWITCH,
-     &     CO2, DAYL, EOP, HARVFRAC, NH4, NO3,                  !Input
+     &     DSAT_CO2, DAYL, EOP, HARVFRAC, NH4, NO3,                  !Input
      &     SNOW, SOILPROP, SPi_AVAIL, SRAD, SW, TMAX, TMIN,     !Input
      &     TRWUP, TWILEN, YREND, YRPLT,                         !Input
      &     CANHT, HARVRES, MDATE, NSTRES, PORMIN, PUptake,      !Output
@@ -648,7 +645,7 @@ c     Total LAI must exceed or be equal to healthy LAI:
 !     Aroids-taro
       CASE('TRARO','TNARO')
         CALL TR_SUBSTOR(CONTROL, ISWITCH,
-     &    CO2, DAYL, EOP, FLOODWAT, HARVFRAC, NH4, NO3,   !Input
+     &    DSAT_CO2, DAYL, EOP, FLOODWAT, HARVFRAC, NH4, NO3,   !Input
      &    SOILPROP, SRAD, ST, SW, TMAX, TMIN, TRWUP,      !Input
      &    YRPLT,                                          !Input
      &    FLOODN,                                         !I/O
@@ -709,7 +706,7 @@ c     Total LAI must exceed or be equal to healthy LAI:
 ! Variable listing for Alt_Plant - updated 08/18/2003
 ! --------------------------------------------------------------------------
 ! CANHT     Canopy height (m)
-! CO2       Atmospheric carbon dioxide concentration (µmol[CO2] / mol[air])
+! DSAT_CO2       Atmospheric carbon dioxide concentration (µmol[CO2] / mol[air])
 ! CONTROL   Composite variable containing variables related to control
 !             and/or timing of simulation.  The structure of the variable
 !             (ControlType) is defined in ModuleDefs.for.
@@ -813,10 +810,10 @@ c     Total LAI must exceed or be equal to healthy LAI:
       CHARACTER*6  ERRKEY
       PARAMETER (ERRKEY = 'IPASCE')
 
-      CHARACTER*12 FILEC
+      CHARACTER*12 FILEC1
       CHARACTER*30 FILEIO
       CHARACTER*78 MSG(6)
-      CHARACTER*80 PATHCR, CHAR
+      CHARACTER*80 PATHCR1, CHAR
       CHARACTER*92 FILECC
 
       INTEGER LUNCRP, LUNIO, NMSG
@@ -830,12 +827,16 @@ c     Total LAI must exceed or be equal to healthy LAI:
 !     The components are copied into local variables for use here.
       TYPE (ControlType) CONTROL
 !	WRITE(*,*)'INSIDE ASCE_KT MEEVP=',MEEVP
-      IF (MEEVP .NE. 'S' .AND. MEEVP .NE. 'T') RETURN
+      !IF (MEEVP .NE. 'S' .AND. MEEVP .NE. 'T') RETURN
 
       NMSG = 0
-!	write(*,*)'useSWAT=',useSWAT
+	!write(*,*)'plant,useSWAT=',useSWAT
 	IF(useSWAT)THEN
-		call interface_speciesDATA(FILEC,FILEC,PATHCR,PATHCR)
+		call interface_speciesDATA1F(3,FILEC1)
+    		call interface_speciesDATA1P(PATHCR1)
+		!write(*,*)'FILEC1:',FILEC1,'PATHCR1:',PATHCR1
+         	!call interface_speciesDATA2(FILEC,PATHCR)
+
 	ELSE
 !-----------------------------------------------------------------------
 !     Read file plus path for species file 
@@ -844,26 +845,30 @@ c     Total LAI must exceed or be equal to healthy LAI:
       LUNIO  = CONTROL % LUNIO
       OPEN (LUNIO, FILE = FILEIO, STATUS = 'OLD', IOSTAT=ERR)
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,0)
-      READ(LUNIO,50,IOSTAT=ERR) FILEC, PATHCR ; LNUM = 7
+      READ(LUNIO,50,IOSTAT=ERR) FILEC1, PATHCR1 ; LNUM = 7
    50 FORMAT(6(/),15X,A12,1X,A80)
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
       CLOSE (LUNIO)
 	END IF
 !-----------------------------------------------------------------------
       IF (CROP .NE. 'FA') THEN
+	!write(*,*)'Open species file'
 !       open species file
         LNUM = 0
-        PATHL  = INDEX(PATHCR,BLANK)
-        IF (PATHL .LE. 1) THEN
-          FILECC = FILEC
-        ELSE
-          FILECC = PATHCR(1:(PATHL-1)) // FILEC
-        ENDIF
+        PATHL  = INDEX(PATHCR1,BLANK)
+	!write(*,*)'PATHL:',PATHL
+        !IF (PATHL .LE. 1) THEN
+        !  FILECC = FILEC
+        !ELSE
+          FILECC = PATHCR1 // FILEC1
+        !ENDIF
+	
+	!write(*,*)'FILECC:',FILECC
         CALL GETLUN('FILEC', LUNCRP)
         OPEN (LUNCRP,FILE = FILECC, STATUS = 'OLD',IOSTAT=ERR)
         IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILECC,0)
         LNUM = 0
-
+	!write(*,*)'PALNT,ASCE,EVAP'
 !       ***** READ ASCE EVAPOTRANSPIRATION PARAMETERS *****
         SECTION = '!*EVAP'
         CALL FIND(LUNCRP, SECTION, LINC, FOUND) ; LNUM = LNUM + LINC
@@ -890,7 +895,8 @@ c     Total LAI must exceed or be equal to healthy LAI:
           NMSG = NMSG + 1
           MSG(NMSG)="Error reading SSKC, SKCBMAX for ASCE PET method."
         ENDIF
-
+	!write(*,*)'SSKC=',SSKC,'SKCBMAX=',SKCBMAX
+	!STOP
 !       Read tall reference crop parameters
         CALL IGNORE(LUNCRP,LNUM,ISECT,CHAR)
         IF(ISECT .NE. 1) CALL ERROR (ERRKEY,1,FILECC,LNUM)
@@ -923,13 +929,15 @@ c     Total LAI must exceed or be equal to healthy LAI:
       ENDIF
 
 !     Store the values for retrieval in SPAM (actually in PET.for).
-      IF (MEEVP.EQ.'S') THEN
+      !IF (MEEVP.EQ.'S') THEN
+	!write(*,*)'SKC=',SSKC
+	IF(SSKC==0)STOP
         CALL PUT('SPAM', 'SKC', SSKC)
         CALL PUT('SPAM', 'KCBMAX', SKCBMAX)
-      ELSEIF (MEEVP.EQ.'T') THEN
-        CALL PUT('SPAM', 'SKC', TSKC)
-        CALL PUT('SPAM', 'KCBMAX', TKCBMAX)
-      ENDIF
+      !ELSEIF (MEEVP.EQ.'T') THEN
+       ! CALL PUT('SPAM', 'SKC', TSKC)
+       ! CALL PUT('SPAM', 'KCBMAX', TKCBMAX)
+      !ENDIF
 
       RETURN
       END SUBROUTINE READ_ASCE_KT

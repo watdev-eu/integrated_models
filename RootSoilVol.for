@@ -79,15 +79,15 @@
       IF (ISWPHO .EQ. 'N') RETURN
 	
         CALL GET(CONTROL)
-	write(*,*)'RootSoilVol',useSWAT
+	!write(*,*)'RootSoilVol',useSWAT
 	IF(useSWAT)THEN
 	CALL interface_RootSoilVol(PLANTS,PlantPop,ROWSPC)
 	!PLANTS
 	!PlantPop
 	!ROWSPC
-	write(*,*)'Here we are'
+	!write(*,*)'Here we are'
 	ELSE
-	write(*,*)'Why we are here'
+	!write(*,*)'Why we are here'
       FILEIO = CONTROL % FILEIO
       LUNIO  = CONTROL % LUNIO
 !-----------------------------------------------------------------------
@@ -112,7 +112,7 @@
 !     CROPGRO uses ROWSPC as m
       ROWSPC = ROWSPC / 100.
       FIRST = .TRUE.
-      write(*,*)'RootSolVOl,FILECC=',FILECC
+      !write(*,*)'RootSolVOl,FILECC=',FILECC
 !     ------------------------------------------------------------------
 !     Read Species file for P parameters
       CALL GETLUN('FILEC', LUNCRP)

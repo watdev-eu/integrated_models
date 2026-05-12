@@ -175,7 +175,7 @@ C=======================================================================
       ISWSYM = ISWITCH % ISWSYM
 
       NLAYR  = SOILPROP % NLAYR
-!	write(*,*)'GROW:DYNAMIC=',DYNAMIC
+
 	
 !***********************************************************************
 !***********************************************************************
@@ -183,7 +183,7 @@ C=======================================================================
 !***********************************************************************
       IF (DYNAMIC == RUNINIT) THEN
 !-----------------------------------------------------------------------
-!	write(*,*)'GROW,RUNINIT'
+
 	CALL GET(PlantG3)
       CALL IPGROW(
      &  FILEIO, FILECC,  CROP,                                  !Input
@@ -488,7 +488,7 @@ C-----------------------------------------------------------------------
 !***********************************************************************
       ELSEIF (DYNAMIC == EMERG) THEN
 !-----------------------------------------------------------------------
-	!IF(interface_ihru==2)write(*,*)'GROW_DSSAT EMERGE'
+	
 	CALL GET(PlantG3)
 
 	PLTPOP=PlantG3%PLTPOP
@@ -539,7 +539,7 @@ C     Initial seedling or transplant weight
 	PlantG3%WTLF=WTLF
 	PlantG3%TOPWT=TOPWT
 	PlantG3%RTWT=RTWT
-	!write(*,*)'WTLF=',WTLF
+	
 	
 	
       !RTWT=PlantG%RTWT		
@@ -563,8 +563,7 @@ C     Initial seedling or transplant weight
       WCRRT = ALPHR * RTWT
 
 
-! write(*,*)'GROW:EMERGENCE,WCRST=',WCRST,
-!     & 'ALPHS=',ALPHS,'STMWT=',STMWT	
+	
 !		
 	PlantG3%WCRLF=WCRLF
 	PlantG3%WCRST=WCRST
@@ -594,10 +593,10 @@ C     Initial seedling or transplant weight
       WTNSD  = 0.0
       WTNTOT = WTNLF + WTNST + WTNRT + WTNSH + WTNSD
 !	IF(interface_ihru==39)THEN
-	       write(*,*)'EMERGE,GROW_DSSAT,WTNTOT=',WTNTOT,WTNLF
+	       
 !		write(*,*)'interface_ihru=',interface_ihru
-!	STOP
-!		IF(WTNLF==0)STOP
+!
+!		
 !	END IF
       IF(WTNTOT==0)THEN
         write(*,*)'EMERGE,GROW_DSSAT,WTNTOT=',WTNTOT,'STOPPING'
@@ -612,7 +611,7 @@ C     Initial seedling or transplant weight
 	PlantG3%WRCSDT=WRCSDT
 	PlantG3%WRCRDT=WRCRDT
 	PlantG3%WRCSHD=WRCSHD
-      !write(*,*)'EMERGE,GROW_DSSAT,WTNTOT=',PlantG3%WTNTOT
+      
 
 	
 	SDPRO=PlantG3%SDPRO ! MODIFICATION	
@@ -627,8 +626,8 @@ C     Initial seedling or transplant weight
 
 	PlantG3%SDNPL=SDNPL
 	PlantG3%SEEDNI=SEEDNI	
-!	write(*,*)'GD,ALUSSA SDNPL=',SDNPL,''
-!	STOP
+
+!	
 !	
 !     Initialize cumulative N variables
       WTNLA  = WTNLF
@@ -637,7 +636,7 @@ C     Initial seedling or transplant weight
 	PlantG3%WTNLA=WTNLA
 	PlantG3%WTNSA=WTNSA
 	PlantG3%WTNRA=WTNRA
-!	write(*,*)'WTNLA=',WTNLA,'WTNSA=',WTNSA,'WTNRA=',WTNRA
+
 	!
 !     Percent N in plant components
       PCNL   = WTNLF / WLFI * 100.
@@ -653,11 +652,14 @@ C     Initial seedling or transplant weight
       SLAAD  = AREALF / (WTLF - WCRLF)
       XLAI   = AREALF / 10000.
       XHLAI  = XLAI
-!	IF(XHLAI==0)THEN
-	!write(*,*)'GROW_DSSAT:EMERG,XHLAI=',XHLAI,'AREALF=',AREALF
-	!write(*,*)'WTLF=',WTLF,'F=',F
 	
-!	END IF
+	
+	
+	
+	
+	
+	
+	
       PlantG3%AREALF=AREALF
 	  PlantG3%CLW=CLW
 		PlantG3%CSW=CSW
@@ -716,7 +718,7 @@ C     Initial seedling or transplant weight
 		PlantG3%RHOS=RHOS
 		PlantG3%RHOL=RHOL
 		PlantG3%RHOR=RHOR
-		!write(*,*)'PUT AREALF=',PlantG3%AREALF,'ihru',interface_ihru
+		
 		CALL PUT(PlantG3)
 C***********************************************************************
 C***********************************************************************
@@ -724,15 +726,19 @@ C     Daily integration
 C***********************************************************************
       ELSEIF (DYNAMIC == INTEGR) THEN
 C-----------------------------------------------------------------------
-	!write(*,*)'Plant_growth,ihru',interface_ihru
-	  CALL GET(PlantG3)
-        AREALF=PlantG3%AREALF
+
+          CALL GET(PlantG3)
+
 	
+	
+!	  CALL GET(PlantG3)
+        AREALF=PlantG3%AREALF
+	!XHLAI=PlantG3%XHLAI
 	  CLW=PlantG3%CLW !
 	  CSW=PlantG3%CSW !
 	  WTNLA=PlantG3%WTNLA !
 	  TOTWT=PlantG3%TOTWT !
-!write(*,*)'BEING TOTWT=',TOTWT
+
 	  TOPWT=PlantG3%TOPWT!
 	  WTLF=PlantG3%WTLF!
 	  STMWT=PlantG3%STMWT !
@@ -755,7 +761,7 @@ C-----------------------------------------------------------------------
 	  WTCO=PlantG3%WTCO  !
 	  NLPEST=PlantG3%NLPEST  !
 	  WTNLF=PlantG3%WTNLF !
-		!WRITE(*,*)'GROW_DSSAT,WTNLF=',WTNLF,'ihru=',interface_ihru
+		
 	  WTNST=PlantG3%WTNST !
 	  WTNRT=PlantG3%WTNRT !
       WTNSH=PlantG3%WTNSH  !
@@ -802,7 +808,7 @@ C-----------------------------------------------------------------------
 	RHOS=PlantG3%RHOS
 	RHOR=PlantG3%RHOL
 	RHOL=PlantG3%RHOL
-	!write(*,*)'BEGIN,WTNLF',WTNLF,YRPLT_interface(interface_ihru)
+	
       NLPEST = 0.0    !CHP - N loss due to pest damage
 !      GROWTH = WLDOTN + WSDOTN + WRDOTN + WSHDTN + WSDDTN + NODGR
 	 GROWTH=WLDOTN+WSDOTN+WRDOTN+WSHDTN+WSDDTN+NODGR
@@ -812,13 +818,13 @@ C-----------------------------------------------------------------------
 ! WSHDTN INPUT
 ! WSDDTN INPUT
 ! NODGR  INPUT
-!write(*,*)'LEAF,STEM,ROOT,SHELL,SEED,NODULE'
-!write(*,*)'WLDOTN    ','WSDOTN    ','WRDOTN   ',
-!& 'WSHDTN    ','WSDDTN    ','NODGR   '
 
-!write(*,*)WLDOTN,WSDOTN,WRDOTN,WSHDTN,WSDDTN,NODGR
-!write(*,*)'GROW_DSSAT:INTEGR,GROWTH=',GROWTH  
-!IF(GROWTH>0.AND.YRDOY.GT.1988128)STOP
+
+
+
+
+  
+!IF(GROWTH>0.AND.YRDOY.GT.1988128)
 	CPFLF=PlantG3%CPFLF
 	CPFSTM=PlantG3%CPFSTM
 	CPFRT=PlantG3%CPFRT
@@ -942,7 +948,7 @@ C-----------------------------------------------------------------------
 	!write(*,*)'WRDOT=',WRDOT
 	!write(*,*)'WPDOT=',WPDOT
 	!write(*,*)'WNDOT=',WNDOT
-	!if(WDOT<0)STOP
+	!
 C-----------------------------------------------------------------------
 	XPODF=PlantG3%XPODF
       IF (GROWTH > 1.E-4) THEN
@@ -1288,7 +1294,7 @@ C-----------------------------------------------------------------------
 	!IF(WTNTOT==0)THEN
 	!write(*,*)WTNLF,WTNST,WTNRT,WTNSD,WTNNOD
 	!write(*,*)'INTEG,GROW_DSSAT,WTNTOT=',WTNTOT,'STOPPING'
-	!STOP
+	!
 	!END IF
 	PlantG3%WTNTOT=WTNTOT
 C-----------------------------------------------------------------------
@@ -1551,12 +1557,13 @@ C-----------------------------------------------------------------------
 	!write(*,*)'GROW_DSSAT,INTEG,ALFDOT=',ALFDOT,'WTLF=',WTLF
 	!write(*,*)'NADLF=',NADLF
 	!write(*,*)'SLDOT=',SLDOT
-	!if(ALFDOT<0)STOP
+	!write(*,*)'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+	!if(ALFDOT<0)
       IF (WTLF > 1.E-4) THEN
          ALFDOT = ALFDOT + SLA * (NADLF/0.16) *
      &   (1. - MIN(1.0,(SLDOT+WLIDOT+WLFDOT)/WTLF))
       ENDIF
-	!write(*,*)'GD LEAF AREA, AREALF=',AREALF,'ALFDOT=',ALFDOT
+	
       AREALF = AREALF + ALFDOT
         !write(*,*)'AREALF=',AREALF,'ALFDOT=',ALFDOT
 	!write(*,*)'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
@@ -1580,9 +1587,11 @@ C-----------------------------------------------------------------------
       AREAH  = AREALF - DISLA
       AREAH  = MAX(0.,AREAH)
       XHLAI  = AREAH / 10000.
-	!write(*,*)'GROW_DSSAT,INTEG,XHLAI=',XHLAI,'AREALF=',AREALF
-	!write(*,*)'DISLA=',DISLA
-	!if(xhlai==0)STOP 
+
+	!if(xhlai==0)THEN
+	!write(*,*)'XHLAI==0'
+	!STOP 
+	!END IF
 C-----------------------------------------------------------------------
 C     Integrate Pest Damage to Seeds
 C-----------------------------------------------------------------------

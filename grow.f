@@ -229,7 +229,13 @@
           !! auto fertilization-nitrogen demand (non-legumes only)
           select case (idc(idp))
             case (4, 5, 6, 7)
-            if (auto_nstrs(j) > 0.) call interface_anfert('SWAT') ! Moodified by JJ ORIGINAL WAS call anfert
+            if (auto_nstrs(j) > 0.)THEN
+ 		IF(useSWAT)THEN
+	call interface_anfert('SWAT') ! Moodified by JJ ORIGINAL WAS call anfert
+	ELSE
+	call  anfert
+	END IF
+	END IF
           end select
 
           !! reduce predicted biomass due to stress on plant
@@ -313,6 +319,9 @@
           if (phuacc(j) > 0.5 .and. phuacc(j) < dlai(idp)) then
             plt_et(j) = plt_et(j) + ep_day + es_day
             plt_pet(j) = plt_pet(j) + pet_day
+	!write(*,*)'grow:Plant_ET','ep_day=',ep_day,'es_day=',es_day
+	!write(*,*)'pet_day=',pet_day
+	!write(*,*)'X_X_X_X_X_X_X_X_X__X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X_X'
           end if
 
           hvstiadj(j) = hvsti(idp) * 100. * phuacc(j)                   

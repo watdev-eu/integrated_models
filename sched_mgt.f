@@ -33,7 +33,11 @@
       use parm
 	USE interface2
       j = ihru
-      
+	if(PLANT_SOURCE(j)=='DSAT')THEN
+	write(*,*)'mgtop=',mgtop(:,j),'no=',nop(j)
+	write(*,*)mgtop(nop(j),j)
+!	STOP
+	END IF      
       select case (mgtop(nop(j),j))
 
           case (1)  !! plant operation
@@ -57,10 +61,18 @@
             if (mgt4op(nop(j),j) < 700.) mgt4op(nop(j),j) = 1700.
 !            if (mgt4op(nop(j),j) > 5000.) mgt4op(nop(j),j) = 5000.
             phu_plt(j) = mgt4op(nop(j),j)
+		write(*,*)'useDSSAT=',useDSSAT
+	if(useDSSAT)THEN
                 IF(PLANT_SOURCE(j).NE.'SWAT')THEN
                     PLANTING_DSSAT(j)=1
+			write(*,*)'Planting DSAT,iida=',iida,'ihru=',ihru
+			stop
+		ELSE
+            		call plantop 
+		END IF
 	ELSE
-            call plantop 
+     		call plantop
+
 	END IF
             if (imgt == 1) then
               write (143, 1000) subnum(j), hruno(j), iyr, i_mo, iida,   
@@ -72,10 +84,11 @@
  
           case (2)  !! irrigation operation
 	write(*,*)'IRRIGATION'
+	!STOP
 	PLANTING_DSSAT(j)=2
             irr_sc(ihru) = mgt2iop(nop(j),j) !source of irrigation water
-		write(*,*)'sched_mgt, irr_sc=',irr_sc(ihru),'i=',ihru	
-		!STOP
+!		write(*,*)'sched_mgt, irr_sc=',irr_sc(ihru),'i=',ihru	
+	
             irr_no(ihru) = mgt10iop(nop(j),j) 
             irramt(ihru) = mgt4op(nop(j),j) !depth (mm) of applied water
             irrsalt(ihru) = mgt5op(nop(j),j)
@@ -103,9 +116,9 @@
             
           
           case (3)   !! fertilizer operation
-		PLANTING_DSSAT(j)=3
-	write(*,*)Fertilizer, 'Watershen number=',j
-	!stop
+	IF(useSWAT)	PLANTING_DSSAT(j)=3
+	!write(*,*)Fertilizer, 'Watershen number=',j
+	
             ifrttyp = mgt1iop(nop(j),j)
             frt_kg = mgt4op(nop(j),j)
             frt_surface = mgt5op(nop(j),j)
@@ -140,19 +153,28 @@
             endif
      
           case (5)   !! harvest and kill operation
-		PLANTING_DSSAT(j)=5
+	write(*,*)'useDSSAT=',useDSSAT
+		IF(PLANT_SOURCE(j)=='DSAT')PLANTING_DSSAT(j)=5
 		
             cnop = mgt4op(nop(j),j)
             hi_ovr = mgt5op(nop(j),j)
             frac_harvk = mgt6op(nop(j),j)
             biomass = bio_ms(j)
 	        !write(*,*)'sched_mgt,MDATE=',MDATE_interface(j),'ihru=',j
-		write(*,*)'iida=',iida
- 		call interface_harvkillop(iida)    
-	!write(*,*)'sched_mgt,MDATE=',MDATE_interface(j),'ihru=',j       
-!            call harvkillop       
+		!write(*,*)'iida=',iida
+	write(*,*)'useDSSAT=',useDSSAT
+ 		IF(PLANT_SOURCE(j)=='DSAT')THEN
+	call interface_harvkillop(iida)    
+	write(*,*)'sched_mgt,MDATE=',MDATE_interface(j),'ihru=',j 
+	!STOP      
+	else
+            call harvkillop
+	write(*,*)'sched_mgt,harvkillop,SWAT,MDATE='
+	write(*,*),MDATE_interface(j),'ihru=',j
+	!STOP	
+	END IF       
 !		write(*,*)'harv kill op, ihru',j,'day=',iida
-           !     STOP
+           
             if (imgt ==1) then
               write (143, 1001) subnum(j), hruno(j), iyr, i_mo, iida, 
      *        hru_km(j), cpnm(idplt(j)),
@@ -170,12 +192,18 @@
             
           case (6)   !! tillage operation
 	write(*,*)'Tillage'
-	 PLANTING_DSSAT(j)=6
+	
             idtill = mgt1iop(nop(j),j)
             cnop = mgt4op(nop(j),j)
-            
+	write(*,*)'useDSSAT=',useDSSAT
+            IF(useDSSAT)THEN
 !            call newtillmix(j,0.)
- 		call interface_newtillmix           
+    		PLANTING_DSSAT(j)=6
+
+ 		call interface_newtillmix          
+	ELSE
+		call newtillmix
+	END IF 
             if (imgt ==1) then
               write (143, 1003) subnum(j), hruno(j),iyr, i_mo, iida, 
      *        hru_km(j), tillnm(idtill),
@@ -185,13 +213,23 @@
             end if
             
           case (7)  !! harvest only operation
-	PLANTING_DSSAT(j)=7
+	
             hi_bms = mgt5op(nop(j),j)
             hi_rsd = mgt6op(nop(j),j)
             harveff = mgt4op(nop(j),j)
             if (harveff <= 0.) harveff = 1.0
 	write(*,*)'iida=',iida 
+
+	IF(PLANT_SOURCE(j)=='DSAT')THEN
             call interface_harvestop(iida)
+	PLANTING_DSSAT(j)=7
+	write(*,*)'harvest,DSSAT'
+	!STOP
+	ELSE
+		call harvestop
+		write(*,*)'harvest op,SWAT'
+		!STOP	
+	END IF
             if (imgt == 1) then
               write (143, 1001) subnum(j), hruno(j), iyr, i_mo, iida, 
      *        hru_km(j), cpnm(idplt(j)),
@@ -204,9 +242,17 @@
           
           case (8)   !! kill operation
 !	write(*,*)'Kill op'
+	IF(PLANT_SOURCE(j)=='DSAT')THEN
 		call interface_killop(iida)
-            !call killop
-  		PLANTING_DSSAT(j)=8
+	   PLANTING_DSSAT(j)=8
+	write(*,*)'killop,DSSAT'
+	STOP
+	ELSE
+            call killop
+		write(*,*)'killop,swat'
+	!STOP
+	END IF
+  		
             if (imgt == 1) then 
               write (143, 1000) subnum(j), hruno(j), iyr, i_mo, iida,
      *        hru_km(j), "         ",
@@ -218,7 +264,7 @@
             phuacc(j) = 0.
             
           case (9)    !! grazing operation
-		PLANTING_DSSAT(j)=9
+	
             manure_id(j) = mgt2iop(nop(j),j) 
             grz_days(j) = mgt1iop(nop(j),j)
             bio_eat(j) = mgt4op(nop(j),j)
@@ -230,8 +276,13 @@
             if (manure_kg(j) < = 0.) then 
               manure_kg(j) = 0.95 * mgt4op(nop(j),j)
             end if
+	IF(PLANT_SOURCE(j)=='DSAT')THEN
 	call interface_graze(1)
-         !   call graze
+               PLANTING_DSSAT(j)=9
+
+	ELSE
+            call graze
+	END IF
         !IF(PLANT_SOURCE(j)=='DSAT')call interface_graze(2)
 	
             if (imgt == 1) then
@@ -243,7 +294,9 @@
             end if
           
           case (10)   !! auto irrigation operation
-		PLANTING_DSSAT(j)=10 
+	write(*,*)'Automatic irrigation','ihru=',j,'P_SOURCE=',PLANT_SOURCE(j)
+
+	IF(useDSSAT)		PLANTING_DSSAT(j)=10 
             wstrs_id(j) = mgt1iop(nop(j),j)
             auto_wstr(j) = mgt4op(nop(j),j)
             irr_eff(j) = mgt5op(nop(j),j)
@@ -270,7 +323,7 @@
             
           case (11)   !! auto fertilizer operation
 	!write(*,*)'auto fertilizer,ihru=',j
-		PLANTING_DSSAT(j)=11
+	IF(useDSSAT)	PLANTING_DSSAT(j)=11
             iafrttyp(j) = mgt1iop(nop(j),j)
             nstress(j) = mgt2iop(nop(j),j)
             auto_nstrs(j) = mgt4op(nop(j),j)
@@ -312,7 +365,7 @@
             end if
           
           case (13)    !! release/impound water in rice fields
-		PLANTING_DSSAT(j)=13
+	IF(useDSSAT)	PLANTING_DSSAT(j)=13
             imp_trig(j) = mgt1iop(nop(j),j)
           
             if (imgt == 1) then
@@ -323,7 +376,7 @@
             end if
           
           case (14)    !! continuous fertilization operation
-		PLANTING_DSSAT(j)=14
+	IF(useDSSAT)	PLANTING_DSSAT(j)=14
             fert_days(j) = mgt1iop(nop(j),j)
             cfrt_id(j) = mgt2iop(nop(j),j)
             ifrt_freq(j) = mgt3iop(nop(j),j)
@@ -357,7 +410,7 @@
           case (17)    !! skip a year
             yr_skip(j) = 1
 		!PLANTING_DSSAT(j)=17
-		write(*,*)'ihru=',j,'day=',iida,'Skip a year'          
+		!write(*,*)'ihru=',j,'day=',iida,'Skip a year'          
       end select
       
       if (mgtop(nop(j),j) /= 17) then 

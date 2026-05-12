@@ -15,7 +15,7 @@ INTEGER,SAVE::interface_ihru
 INTEGER,allocatable,save::year_old(:)
 INTEGER,allocatable,SAVE::PLANTING_DSSAT(:),YRPLT_interface(:),TILLNO_INTERFACE(:)
 INTEGER,allocatable::MDATE_interface(:)
-REAL,allocatable,SAVE::ORIGINAL_DSSAT(:,:,:)
+REAL,allocatable,SAVE::ORIGINAL_DSSAT(:,:,:),irrigation_lkm(:)
 TYPE(ControlType),allocatable,save:: CONTROL_NEW(:)
 TYPE(SoilType),allocatable,save::SOILPROP_NEW(:)
 TYPE(SwitchType),save::KYTKIN
@@ -28,6 +28,8 @@ TYPE(Land_S),allocatable,save::LAND_NEW(:)
 TYPE(ToSwatType),allocatable,save::ToSwat_NEW(:)
 TYPE(OrgMatAppType),allocatable,save::ORG_FERT(:),ORG_RESIDUE_MGM(:)
 TYPE(TillType),allocatable,save::TILL_DATA(:)
+TYPE(SpamType),allocatable,save::SPAM_INTERFACE(:)
+TYPE(SpamType)::SPAM1
 TYPE FileType
 	CHARACTER(LEN=12)::FILE_SPE,FILE_CUL,FILE_ECO,FILE_PST
 END TYPE FileType
@@ -47,7 +49,7 @@ integer :: j
 j = 0
       j = ihru
 interface_ihru=ihru
-!write(*,*)'interface_dormant,idorm=',idorm(j)
+
 !! check for beginning of dormant season
       if (idc(idplt(j)) == 1 .or. idc(idplt(j)) == 4) return
       if (idorm(j) == 0 .and. dayl(j)-dormhr(j) < daylmn(hru_sub(j)))   then
@@ -216,9 +218,6 @@ interface_ihru=ihru
 PLANTING_DSSAT(interface_ihru)=7
 MDATE_interface(interface_ihru)=(iyr+curyr-1)*1000+day_number
 YRPLT_interface(interface_ihru)=10000
-write(*,*)'interface_killop',interface_ihru
-write(*,*)'MDATE=',MDATE_interface(interface_ihru),'day=',day_number
-write(*,*)'----------END killop---------------------------------'
 RETURN
 END SUBROUTINE interface_harvestop
 
@@ -234,9 +233,7 @@ interface_ihru=ihru
 PLANTING_DSSAT(interface_ihru)=8
 MDATE_interface(interface_ihru)=(iyr+curyr-1)*1000+day_number
 YRPLT_interface(interface_ihru)=10000
-write(*,*)'interface_killop',interface_ihru
-write(*,*)'MDATE=',MDATE_interface(interface_ihru),'day=',day_number
-write(*,*)'----------END killop---------------------------------'
+
 RETURN
 END SUBROUTINE interface_killop
 
@@ -251,10 +248,7 @@ interface_ihru=ihru
 PLANTING_DSSAT(interface_ihru)=5
 MDATE_interface(interface_ihru)=(iyr+curyr-1)*1000+day_number
 YRPLT_interface(interface_ihru)=10000
-write(*,*)'interface_harvkillop,PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru),'ihru=',interface_ihru
-write(*,*)'MDATE=',MDATE_interface(interface_ihru),'day',day_number
-write(*,*)'----------END harvkillop------------------------------------'
-!STOP
+
 RETURN
 END SUBROUTINE interface_harvkillop
 
@@ -665,7 +659,6 @@ j=interface_ihru
       ifrt = 0
       ifrt = iafrttyp(j)
 !idp = idplt(j)
-!write(*,*)'ANFERT,SOURCE=',SOURCE
 EHTO=.FALSE.
 SELECT CASE(SOURCE)
 	CASE('SWAT')
@@ -675,7 +668,7 @@ SELECT CASE(SOURCE)
 			tpno3=plantn(j)	 ! kg/ha
 			phu_mod=phuacc(j)
 			PLANTING_DSSAT(j)=0
-		!write(*,*)'AUTO FERT,SWAT'
+		
 		ELSE
 			EHTO=.FALSE.
 		END IF
@@ -683,20 +676,16 @@ SELECT CASE(SOURCE)
 	CASE('DSAT')
 		EHTO=.TRUE.
 		tpno3=Plant_Interface%WTNTOT*10   ! g/m^2 =>kg/ha
-!	if(tpno3==0)then
-!	write(*,*)'imterface_anfert,STOPPING.tpno3=',tpno3
-!STOP 
-!END IF
-	!	phu_mod=sum(Plant_interface%PHZACC)/phu_plt(j)
+
 		phu_mod=phuacc(j)
-	write(*,*)'tpno3=',tpno3,'phu_mod=',phu_mod,phu_plt(j)
+	
 	CASE DEFAULT
-		write(*,*)'Autofertilization wrong. Stopping'
+		write(*,*)'Autofertilization wrong stopping'
 		STOP
 	END SELECT 
 
 if (EHTO) then
-	!write(*,*)'Approach',nstress(j)
+	
         targn = 0.
         if (nstress(j) == 0) then                !! n target approach
          tsno3 = 0.
@@ -755,7 +744,7 @@ endif
         else
           dwfert = 0.
         endif
-	!write(*,*)'ANFERT,dwfert=',dwfert,'targn=',targn,'SOURCE=',SOURCE,interface_ihru
+	
                 Fert_NEW(interface_ihru) % ADDFUREA= dwfert*(1-afrt_surface(interface_ihru))
                 Fert_NEW(interface_ihru) % ADDOXU  = dwfert*afrt_surface(interface_ihru)
                 Fert_NEW(interface_ihru) % ADDOXH4 = (afrt_surface(interface_ihru))*dwfert *  fnh3n(j) * fminn(j)
@@ -778,7 +767,7 @@ endif
 
 
 !	CALL PUT(Fert_NEW(interface_ihru))	
-	!	write(*,*)'END interface_ANFERT'
+	
 	
 
 
@@ -884,7 +873,7 @@ SFDUR=24    ! Cultivar file
 PODUR=10 ! Cultivar file
 THRESH=70 ! Cultivar file
 SDPDVR=27
-write(*,*)'Interface.PODS,ECONO=',ECONO
+
 RETURN
 END SUBROUTINE interface_PODS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -965,7 +954,7 @@ SELECT CASE(CROP_IN)
 
 END SELECT 
 
-!write(*,*)'Crop in=',CROP_IN,'Crop out=',CROP_out
+
 !! Generic
 !1 AGRL ! Agricultural generic, used Grain Sorghum info
 !2 AGRR ! Agricultural generic- Row crops, used valueas of Corn
@@ -1103,7 +1092,7 @@ TYPE(ControlType) CONTROL
 TYPE(SwitchType) ISWITCH
 TYPE(FloodWatType) FLOODWAT
 
-!write(*,*)'interface_MGM,i=',i
+
 interface_ihru=ihru
 j=interface_ihru
 CALL GET(Plant_Interface)
@@ -1118,23 +1107,19 @@ AIRAMT=100
 DSOIL=1
 THETAC=50.0
 THETAU=100.00
-!write(*,*)'Interface mangement options'
+
 IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
 	IF(PLANTING_DSSAT(interface_ihru)==0)THEN
 	PLANTING_DSSAT(interface_ihru)=PLANTING_DSSAT2
+	
+	
 	END IF
-IF(interface_ihru==4)THEN
-	write(*,*)'In interface2,PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru),'ihru=',interface_ihru
-IF(DYNAMIC.EQ.RATE)THEN
-STOP
-END IF
-END IF
 END IF
 DYNAMIC=CONTROL%DYNAMIC
 DUL=SOILPROP_NEW(interface_ihru)%DUL
 LL=SOILPROP_NEW(interface_ihru)%LL
 YRDOY=CONTROL%YRDOY
-!write(*,*)'INTERFACE2, YRDOY=',YRDOY
+
 
 !YREND Date for end of season usually harvest date
 ! FERTDATA
@@ -1161,7 +1146,7 @@ YRDOY=CONTROL%YRDOY
 !FERTDATA%FERTYPE=
 
 IF(DYNAMIC.EQ.SEASINIT)THEN
-
+YRPLT_interface=0
 
 	IF (FIRST) THEN
         	CALL FertTypeRead(CONTROL)
@@ -1170,7 +1155,7 @@ IF(DYNAMIC.EQ.SEASINIT)THEN
 
 
 	IIRRI=ISWITCH%IIRRI
-	write(*,*)'Int,NofO=',NofO
+
 	IF(mgt_ops(NofO,interface_ihru)==11)THEN
 		ISWITCH%IFERI='A'
 	ELSE
@@ -1192,14 +1177,14 @@ FTYPEN=4
 
 add_year=iyr
 koko=shape(idop)
-!write(*,*)'IOPERA=',iopera,koko
+
 IF(koko(1).GT.1)THEN
 f=1
 do II=1,koko(1)-1
-!   write(*,*)'Operation id=',mgtop(I,interface_ihru)
+
 
 	IF(idop(II,interface_ihru).LT.idop(II+1,interface_ihru))THEN
-	!write(*,*)'Operation id=',mgtop(I,interface_ihru)
+	
 	IF(mgtop(II,interface_ihru).EQ.3)THEN
 		FDAY(f)=add_year*1000+idop(II,interface_ihru)
 		f=f+1
@@ -1217,9 +1202,7 @@ ELSE
 
 
 END IF
-!write(*,*)'Current year=',iyr
-!write(*,*)'idop(:,100)=',idop(:,100)
-!FDAY=1988250 ! All of them GET FROM SWAT
+
 
 FERTYPE_CDE='   04'
 !Fertilizer method for Ith application
@@ -1251,8 +1234,8 @@ ADDUREA  = 1.0
 ADDSPi   = 1.0
 ADDSKi   = 1.0
 
-DO I = 1, NSlowRelN     !max # that can be applied
-	SlowRelN(I) % ACTIVE = .FALSE.
+DO II = 1, NSlowRelN     !max # that can be applied
+	SlowRelN(II) % ACTIVE = .FALSE.
 ENDDO
 NSR = 1                 !actual # applied in this simulation
 
@@ -1290,15 +1273,20 @@ FERTYPE=3
 ELSE IF(DYNAMIC.EQ.RATE)THEN
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	IF(PLANTING_DSSAT2>0.OR.PLANTING_DSSAT(interface_ihru)>0)THEN
-	write(*,*)'MANGEMENT,RATE,STOP',PLANTING_DSSAT2,PLANTING_DSSAT(interface_ihru)
-	!STOP
+	
+	
 	END IF
 	!write(*,*)'interface_MGM,PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru)
 !	write(*,*)'INSIDE interface_mgm,ihru=',interface_ihru,'ID_P=',PLANTING_DSSAT2
+	!IF(PLANT_SOURCE(interface_Ihru).EQ.'SWAT')THEN
+	CALL GET('MGMT','IRRAMT',IRRAMT_DSSAT)	
+	!END IF	
+
 	IF(PLANTING_DSSAT2==0.AND.PLANTING_DSSAT(interface_ihru)==0)RETURN
 
  !       write(*,*)'INSIDE interface_mgm,ihru=',interface_ihru,'ID_P=',PLANTING_DSSAT2
 !	write(*,*)'PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru),PLANT_SOURCE(interface_ihru)
+	!write(*,*)'interface,PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru),'i=',interface_ihru
 
 	SELECT CASE(PLANTING_DSSAT(interface_ihru))
 	CASE(11)
@@ -1310,14 +1298,17 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 	CASE(5)
 	! 5 Harvest and kill
 	YREND=iida
-	!write(*,*)'INTERFACE_MGM'
-	!STOP
+	write(*,*)'INTERFACE_MGM harvest and kill'
+	write(*,*)'SOURCE=',PLANT_SOURCE(interface_ihru)
+	!STOP 
+	
 	eff=maxval((/harveff,frac_harvk,hi_ovr/))
 	HARVFRAC=(/eff,0.0/)
 	PLANTING_DSSAT(interface_ihru)=0
 	yldkg(icr(interface_ihru),interface_ihru)=Plant_Interface%TOPWT*10+yldkg(icr(interface_ihru),interface_ihru)
 	yldanu(interface_ihru)=yldanu(interface_ihru)+Plant_Interface%TOPWT*10/1000
-
+	bio_yrms(interface_ihru)=bio_yrms(interface_ihru)+Plant_Interface%TOPWT/10/1000
+		
 	IF(PLANT_SOURCE(interface_ihru).EQ.'SWAT')THEN
 
 		hiad1 = 0.
@@ -1410,6 +1401,7 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 	
 
 	ELSE
+		yield=Plant_Interface%TOPWT*(1-HARVFRAC(1))
 		resnew=HARVFRAC(1)*Plant_Interface%TOPWT
 	        BLG1 = 0.01/0.10
                 BLG2 = 0.99
@@ -1450,7 +1442,7 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 
 	DO II=1,NL
 	!	write(*,*)'I=',I,shape(ORG_RESIDUE_MGM(interface_ihru)%ResWt),NL
-	!STOP
+	
  	 	ORG_RESIDUE_MGM(interface_ihru)%ResWt(I)=rtfr(I)*rtresnew
 		ORG_RESIDUE_MGM(interface_ihru)%ResE(I,N)=rtfr(I) *ff2 * (plantn(j) - yieldn)
          	ORG_RESIDUE_MGM(interface_ihru)%ResE(I,P)=rtfr(I) *ff2 * (plantp(j) - yieldp)
@@ -1460,7 +1452,23 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 +sum(ORG_RESIDUE_MGM(interface_ihru)%ResE(:,N),1)
 	ORG_RESIDUE_MGM(interface_ihru)%CumResE(P)=ORG_RESIDUE_MGM(interface_ihru)%CumResE(P)&
 +sum(ORG_RESIDUE_MGM(interface_ihru)%ResE(:,P),1)
-      !OMAData % NAPRes     = NAPRes
+      
+
+
+
+	
+		!! summary calculations
+      if (curyr > nyskip) then
+       wshd_yldn = wshd_yldn + yieldn * hru_dafr(interface_ihru)
+       wshd_yldp = wshd_yldp + yieldp * hru_dafr(interface_ihru)
+       yldkg(icr(interface_ihru),interface_ihru) = yldkg(icr(interface_ihru),interface_ihru) + yield
+       bio_hv(icr(interface_ihru),interface_ihru) = bio_ms(interface_ihru) + bio_hv(icr(interface_ihru),interface_ihru)
+       yldanu(interface_ihru) = yldanu(interface_ihru) + yield / 1000.
+       bio_yrms(interface_ihru) = bio_yrms(interface_ihru) + bio_ms(interface_ihru) / 1000.
+       ncrops(icr(interface_ihru),interface_ihru) = ncrops(icr(interface_ihru),interface_ihru) + 1
+      endif
+
+!OMAData % NAPRes     = NAPRes
       !OMAData % RESDAT     = RESDAT
       !OMAData % ResDepth   = RESDEPTH
       !OMAData % ResTYPE    = RESTYPE
@@ -1480,6 +1488,8 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 	eff=maxval((/harveff,frac_harvk,hi_ovr/))
         HARVFRAC=(/0.0,0.0/)
         !yldkg(icr(interface_ihru),interface_ihru)=Plant_Interface%TOPWT*10+yldkg(icr(interface_ihru),interface_ihru)
+	write(*,*)'KILLOP,interface'
+	!STOP
 	IF(PLANT_SOURCE(interface_ihru).EQ.'SWAT')THEN
 		resnew = 0.
 	rtresnew = 0.
@@ -1543,7 +1553,7 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 
         DO II=1,NL
         !       write(*,*)'I=',I,shape(ORG_RESIDUE_MGM(interface_ihru)%ResWt),NL
-        !STOP
+        
                 ORG_RESIDUE_MGM(interface_ihru)%ResWt(I)=rtfr(I)*rtresnew
                 ORG_RESIDUE_MGM(interface_ihru)%ResE(I,N)=rtfr(I) *(plantn(j))
                 ORG_RESIDUE_MGM(interface_ihru)%ResE(I,P)=rtfr(I) * (plantp(j))
@@ -1557,12 +1567,24 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 
 
 	PLANTING_DSSAT(interface_ihru)=0
+
+
+
+      bio_hv(icr(j),j) = bio_ms(j) + bio_hv(icr(j),j)
+
+
+
+
+
+
+
 	CASE(7)
 	! 7 harvest only
 		YREND=iida
 		eff=maxval((/harveff,frac_harvk,hi_ovr/))
         	HARVFRAC=(/eff,0.0/)
-
+	write(*,*)'harvest,interface'
+	!stop
 	IF(PLANT_SOURCE(interface_ihru).EQ.'SWAT')THEN
 		j = ihru
       		yieldgrn = 0.
@@ -1802,17 +1824,22 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
         ORG_RESIDUE_MGM(interface_ihru)%CumResE(P)=ORG_RESIDUE_MGM(interface_ihru)%CumResE(P)&
 +sum(ORG_RESIDUE_MGM(interface_ihru)%ResE(:,P),1)
 
+  		bio_hv(icr(interface_ihru),interface_ihru) = (yield + clip + rtresnew)+ bio_hv(icr(interface_ihru),interface_ihru)                       !! Jeff, is this the intention
+                bio_yrms(interface_ihru) = bio_yrms(interface_ihru) + (yield + clip + rtresnew) / 1000.                       !! Jeff, is this the intention
 
 
         yldkg(icr(interface_ihru),interface_ihru)=Plant_Interface%TOPWT*10+yldkg(icr(interface_ihru),interface_ihru)
 	yldanu(interface_ihru)=yldanu(interface_ihru)+Plant_Interface%TOPWT*10/1000
+
+
+
 
 	PLANTING_DSSAT(interface_ihru)=0
 	CASE(1)
 	! Planting a crop
 	YRPLT=iyr*1000+iida
 	PLANTING_DSSAT(interface_ihru)=0
-
+	write(*,*)'YRPLT=',YRPLT
 	CASE(3)
 	! Fertilizer operation happens by a given day
 	CALL interface_anfert('DSAT')
@@ -1823,10 +1850,15 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 	STOP
 	CASE(2000)
 	!IRRIGATION:
-        strsw(interface_ihru)=P_GROWTH(interface_ihru)%TURFAC
-        irramt_dssat=irramt(interface_ihru)
-
-
+	
+        strsw(interface_ihru)=1-P_GROWTH(interface_ihru)%SATFAC!TURFAC
+	 !auto_wstr(interface_ihru)=1
+        irramt_dssat=aird(interface_ihru)
+	!write(*,*)'interface2,SOURCE=',PLANT_SOURCE(interface_ihru),strsw(interface_ihru), auto_wstr(interface_ihru)
+	!hrumono(22,interface_ihru) = hrumono(22,interface_ihru) + irramt_dssat
+	!write(*,*)'irramt_dssat=',irramt_dssat,'i=',interface_ihru
+	
+	
 	END SELECT
 	
 	IIRRI='A'
@@ -1904,7 +1936,7 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 END IF
 !write(*,*)'From interface_mgm'
 OMAdata=ORG_RESIDUE_MGM(interface_ihru)
-
+CALL GET('MGMT','IRRAMT',IRRAMT_DSSAT)
 RETURN
 END SUBROUTINE interface_MGMTOPS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1935,7 +1967,7 @@ WTPSD=0.180
 SDPRO=0.153
 SDLIP=0.12
 SDWTPL=PLTPOP*10000*WTPSD/1000
-WRITE(*,*)'interface_ipgrow, crop=',crop,'interface_ihru=',interface_ihru,'ECONO=',ECONO
+!WRITE(*,*)'interface_ipgrow, crop=',crop,'interface_ihru=',interface_ihru,'ECONO=',ECONO
 RETURN
 END SUBROUTINE interface_IPGROW
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1996,7 +2028,7 @@ kerros=kerros*0.001 ! mm > m
 !write(*,*)interface_ihru,'hru_ha=',hru_ha(interface_ihru)
 !if(hru_ha<1)THEN
 !write(*,*)'hru_ha=',hru_ha(interface_ihru)
-!STOP
+
 !END IF
 NO3=sol_no3(1:NL,interface_ihru) ! In SWAT kg/ha   N_SWAT*sub_ha*1000*1000 =>mg 
  NH4=sol_nh3(1:NL,interface_ihru)
@@ -2016,7 +2048,7 @@ NH4=(NH4/(hru_ha(interface_ihru)*10**4*kerros(:)*sol_bd(:,interface_ihru)*10**6)
 !write(*,*)'KERROS=',kerros,'bd=',sol_bd(:,interface_ihru)
 !write(*,*)'NO3, Swat',sol_no3(1:2,interface_ihru),'DSSAT',NO3(1:2)
 !write(*,*)'ihru=',interface_ihru,'SOURCE=',PLANT_SOURCE(interface_ihru)
-!STOP
+
 !sub_ha
 
 !mg /[ha*100*mm/(kg/m^3)]
@@ -2123,7 +2155,7 @@ REAL::SDEPTH,SDAGE,ATEMP,CSDVAR,PPSEN,PH2T5,HELP(4)
 ECONO=P_GROWTH(interface_ihru)%ECONO!'CAND01' !ninimum for lentils
 PLME='S'
 SDEPTH=1.25 !1.25-3.75
-PPSEN=0.01
+PPSEN=0.0!0.01
 PH2T5=22
 CSDVAR=23
 ! Also IPPLNT need ECONO and CROP
@@ -2208,7 +2240,7 @@ INTEGER::i_new
 	 SOILPROP_NEW(interface_ihru) % DLAYR(i_new)  =(sol_z(i_new,interface_ihru)-sol_z(i_new-1,interface_ihru))/10.0
 	!if(interface_ihru==1332)write(*,*)sol_z(i_new,interface_ihru),sol_z(i_new-1,interface_ihru)
 	END DO
-	!if(interface_ihru==1332)STOP
+	
       SOILPROP_NEW(interface_ihru) % DMOD   = 0        !formerly SLNF
       SOILPROP_NEW(interface_ihru) % DS(1:sol_nly(interface_ihru))     =sol_z(1:sol_nly(interface_ihru),interface_ihru)/10.0
       SOILPROP_NEW(interface_ihru) % DUL    = 0.4*SOL_CLAY(1:sol_nly(interface_ihru),interface_ihru)&
@@ -2359,7 +2391,7 @@ CCO2=CO2(interface_ihru) ! From SWAT
 !     Daily data
       WEATHER % AMTRH  = AMTRH  ! CALCULATED by DSSAT
       WEATHER % CLOUDS = CLOUDS ! Calculated by DSSAT
-      WEATHER % CO2    = CO2(interface_ihru)*1.5    !INPUT CO2(ihru) comes from SWAT  
+      WEATHER % CO2    = co2(hru_sub(interface_ihru))*1.0    !INPUT CO2(ihru) comes from SWAT  
       WEATHER % DAYL   = DAYL(interface_ihru)   !Calculated by DSSAT 
       WEATHER % OZON7  = 0!OZON7  !INPUT
       WEATHER % PAR    = PAR    !INPUT
@@ -2436,7 +2468,7 @@ USE ModuleDefs
 USE parm,ONLY:idplt,idc,iyr,cpnm
 USe ModuleData
 IMPLICIT NONE
-INTEGER::i,YRPLT,MDATE,YREND,LENGTH
+INTEGER::ii,YRPLT,MDATE,YREND,LENGTH
 INTEGER::FILE_ID
 character(LEN=length)::source
 CHARACTER(len=2)::DSSAT_CROP
@@ -2447,11 +2479,14 @@ TYPE(ToSwatTYPE) ToSwat
 
 ModelVerTxt='048'
 CALL interface_FILE(FILES)
-write(*,*)'INTERFACE BEGIN'
-!STOP
+!write(*,*)'INTERFACE BEGIN'
+
 ! Make this more robust
 if(source.EQ.'simul')THEN
 ALLOCATE(FERT_NEW(nhru))
+ALLOCATE(irrigation_lkm(nhru))
+irrigation_lkm=0
+ALLOCATE(SPAM_INTERFACE(nhru))
 ALLOCATE(TILLNO_INTERFACE(nhru))
 TILLNO_INTERFACE=0
 ALLOCATE(CONTROL_NEW(nhru))
@@ -2482,7 +2517,7 @@ END IF
 
 ISWITCH%MEPHO='C' ! Was C
 ISWITCH%MESOM='P'
-ISWITCH%MEEVP='R'
+ISWITCH%MEEVP='D'  ! Was F,R
 ISWITCH%MESEV='S' ! No UP_FLOW NEEDED
 ISWITCH%ISWWAT='Y'
 ISWITCH%MEINF='M' ! (M is muclh modelled, N Mulch is not modelled)
@@ -2509,89 +2544,98 @@ ISWITCH%ISWWAT='Y'  !Water simulation
  ISWITCH%IFERI='F'
 ISWITCH%IPLTI='R'    ! Planting date method switch (A,R,F)
 !ISWITCH%ISIMI='P'  ! E=on reported emergence day, P= on reported planting date
+ISWITCH%METMP=''
 KYTKIN=ISWITCH 
 KYTKIN_ALL=KYTKIN
 IF(SOURCE.EQ.'simul')THEN
-DO i=1,nhru
-write(*,*)'i=',i,'interface_begin'	
-	interface_ihru=i
+DO ii=1,nhru
+!write(*,*)'ii=',ii,'interface_begin'	
+	interface_ihru=ii
 	!write(*,*)'Interface,i=',i
 	! INITILIZATION of variables
-	CONTROL_NEW(i)%DYNAMIC=RUNINIT
+	CONTROL_NEW(ii)%DYNAMIC=RUNINIT
+	LAND_NEW(ii)%RWU=0
+	
 	!write(*,*)'INTERFACE;PLANT=',cpnm(idplt(i))
-	CALL interface_mapping(cpnm(idplt(i)),DSSAT_CROP,RESIDUE_TYPE(i),FILE_ID)
-    write(*,*)'INTERFACE;PLANT=',cpnm(idplt(i)),'                    DSSAT=',DSSAT_CROP
-	IF(DSSAT_CROP.EQ.'TM')KYTKIN_ALL(i)%ISWPHO='N'
-	SELECT CASE(idc(idplt(i)))
+	CALL interface_mapping(cpnm(idplt(ii)),DSSAT_CROP,RESIDUE_TYPE(ii),FILE_ID)
+   ! write(*,*)'INTERFACE;PLANT=',cpnm(idplt(ii)),'                    DSSAT=',DSSAT_CROP
+	IF(DSSAT_CROP.EQ.'TM')KYTKIN_ALL(ii)%ISWPHO='N'
+	SELECT CASE(idc(idplt(ii)))
 		CASE(3,6,7)
-			CONTROL_NEW(i)%CROP='WA' ! WA =WATDEV
-			PLANT_SOURCE(i)='SWAT'
+			CONTROL_NEW(ii)%CROP='WA' ! WA =WATDEV
+			PLANT_SOURCE(ii)='SWAT'
 		CASE default
 			IF(.not.agro_forestry)THEN
-				CONTROL_NEW(i)%CROP=DSSAT_CROP
+				CONTROL_NEW(ii)%CROP=DSSAT_CROP
 				IF(DSSAT_CROP.NE.'WA')THEN
 				!write(*,*)'interface2:DSSAT CROP=',DSSAT_CROP,'ihru=',i
 				!P_GROWTH(i)%ECONO='CO0001'!'LAT001'!'999991'!'CAND01'
-				WRITE(*,*)'To interface_ECONO'	
-				CALL interface_ECONO(DSSAT_CROP,P_GROWTH(i)%ECONO)
-				PLANT_SOURCE(i)='DSAT'
-				!STOP 
+				!WRITE(*,*)'To interface_ECONO'	
+				CALL interface_ECONO(DSSAT_CROP,P_GROWTH(ii)%ECONO)
+				PLANT_SOURCE(ii)='DSAT'
+				 
 				ELSE
-				PLANT_SOURCE(i)='SWAT'
+				PLANT_SOURCE(ii)='SWAT'
 				END IF
 			ELSE
-				CONTROL_NEW(i)%CROP='WA' ! WA = WATDEV, indicating modification
+				CONTROL_NEW(ii)%CROP='WA' ! WA = WATDEV, indicating modification
 			END IF
 	END SELECT
-	IF(i==1332)THEN
-	write(*,*)'CROP=',CONTROL_NEW(i)%CROP,'ihru=',i
-	!STOP
+	IF(ii==1332)THEN
+	write(*,*)'CROP=',CONTROL_NEW(ii)%CROP,'ihru=',ii
+	
 	END IF
-	OLD_CROP(i)=DSSAT_CROP
+	OLD_CROP(ii)=DSSAT_CROP
 	!CONTROL_NEW(i)%CROP
 	!CONTROL_NEW(i)%FILEIO
-	CONTROL_NEW(i)%MODEL='CRGRO'
-	CONTROL_NEW(i)%N_ELEMS=3
-	CONTROL_NEW(i)%FROP=7
-	CONTROL_NEW(i)%YRDOY=iyr*1000
+	CONTROL_NEW(ii)%MODEL='CRGRO'
+	CONTROL_NEW(ii)%N_ELEMS=3
+	CONTROL_NEW(ii)%FROP=7
+	CONTROL_NEW(ii)%YRDOY=iyr*1000
 	!CONTROL_NEW(i)%YRSIM
-	CONTROL_NEW(i)%RUN=1
-        CONTROL_NEW(i)%RNMODE='N' ! QF on jatkuva?
-        CONTROL_NEW(i)%DAS=0
+	CONTROL_NEW(ii)%RUN=1
+        CONTROL_NEW(ii)%RNMODE='N' ! QF on jatkuva?
+        CONTROL_NEW(ii)%DAS=0
 	!write(*,*)'iyr=',iyr
-	CONTROL_NEW(i)%YRSIM=iyr*1000 ! YYYYDDD
+	CONTROL_NEW(ii)%YRSIM=iyr*1000 ! YYYYDDD
 
 	YRPLT=iyr*10000
-	CONTROL=CONTROL_NEW(i)
-	CALL PUT(P_GROWTH(i))
-	write(*,*)'TO Land runinit,interface_ihru=',interface_ihru
+	CONTROL=CONTROL_NEW(ii)
+	CALL PUT(P_GROWTH(ii))
+	CALL PUT(LAND_NEW(ii))
+	!write(*,*)'TO Land runinit,interface_ihru=',interface_ihru
 	ISWITCH=KYTKIN_ALL(interface_ihru)
 	! RUNINIT
 	CALL LAND(CONTROL,ISWITCH,YRPLT,MDATE,YREND)
-	write(*,*)'From Land runinit'
+	!write(*,*)'From Land runinit'
 	!IF(i==1)THEN
 	!CALL GET(P_GROWTH(i))
 	!write(*,*)'RUN INIT,PROSTI=',P_GROWTH(i)%PROSTI,'i=',i
 	!END IF
-	CONTROL_NEW(i)%DYNAMIC=SEASINIT
+	CONTROL_NEW(ii)%DYNAMIC=SEASINIT
 	Call GET(ToSwat)
 	CAll GET(LAND_C)
-	ToSwat_NEW(i)=ToSwat
-	LAND_NEW(i)=LAND_C
+	CALL GET(SPAM1)
+	SPAM_INTERFACE(ii)=SPAM1
+	ToSwat_NEW(ii)=ToSwat
+	LAND_NEW(ii)=LAND_C
 	
-	CONTROL=CONTROL_NEW(i)
-	WRITe(*,*)'tO lAND SEASINIT'
+	CONTROL=CONTROL_NEW(ii)
+	!WRITe(*,*)'tO lAND SEASINIT'
 	! SEASINIT
 	CALL LAND(CONTROL,ISWITCH,YRPLT,MDATE,YREND)
-	WRITE(*,*)'fROM land seasinit'
-	        IF(i==1)THEN
-        CALL GET(P_GROWTH(i))
+	CALL GET(SPAM1)
+	SPAM_INTERFACE(ii)=SPAM1
+
+	!WRITE(*,*)'fROM land seasinit'
+	        IF(ii==1)THEN
+        CALL GET(P_GROWTH(ii))
         !write(*,*)'SEASINIT, PROSTI=',P_GROWTH(i)%PROSTI,'i=',i
         END IF
 
 
-	CONTROL_NEW(i)%DYNAMIC=RATE
-	CALL GET(P_GROWTH(i))
+	CONTROL_NEW(ii)%DYNAMIC=RATE
+	CALL GET(P_GROWTH(ii))
 	CALL GET(ToSwat)
 	!if(i==1)THEN
 	!write(*,*)'XLEAF=',P_GROWTH(i)%XLEAF
@@ -2607,38 +2651,53 @@ RETURN
 	!ISWITCH%IPLTI= ! Panting switch 	
 END SUBROUTINE interface_begin
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-SUBROUTINE interface_speciesDATA(FILEC,PATHCR,FILEE,PATHEC)
+SUBROUTINE interface_speciesDATA1F(indeksi,FILEout)
 IMPLICIT NONE
-CHARACTER(len=12)::FILEC
-CHARACTER(len=12),OPTIONAL::FILEE
-CHARACTER(len=80)::PATHCR
-CHARACTER(len=80),OPTIONAL::PATHEC
+CHARACTER(len=12)::FILEout
 CHARACTER(len=2)::CROP
 CHARACTER(len=10)::BEGIN,BEGIN2
+CHARACTER(len=80)::APU1,APU2
+INTEGER::indeksi
+
+
+!write(*,*)'inside interface_SPECIESdata1'
 
 CROP=CONTROL_NEW(interface_ihru)%CROP
 BEGIN='GRO048.ECO'
 BEGIN2='GRO048.SPE'
-FILEC=TRIM(CROP)//TRIM(BEGIN2)
-
-!FILEC='COGRO048.SPE'
-if(present(FILEE))THEN
-FILEE=TRIM(CROP)//TRIM(BEGIN)
-!FILEE='COGRO048.ECO'
+FILEout=' '
+!write(*,*)'INdeksi=',indeksi
+IF(indeksi==1)THEN
+FILEout=TRIM(CROP)//TRIM(BEGIN2)
+ELSE IF(indeksi==2)THEN
+FILEout=TRIM(CROP)//TRIM(BEGIN)
+ELSE
+FILEout='COGRO048.SPE'
 END IF
-PATHCR='/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/'
-IF(present(PATHEC))THEN
-PATHEC=PATHCR
-END IF
+!write(*,*)'1 FILEout:',FILEout
 
-write(*,*)'interface_speciesDATA:interface_ihru=',interface_ihru
-write(*,*)'CROP=',CROP
-write(*,*)'FILEC=',FILEC
-IF(present(FILEE))write(*,*)'FILEE=',FILEE
-write(*,*)'PATHCR',PATHCR
-write(*,*)'END SPECIES data'
 RETURN
-END SUBROUTINE interface_speciesDATA
+END SUBROUTINE interface_speciesDATA1F
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+SUBROUTINE interface_speciesDATA1P(PATHout)
+IMPLICIT NONE
+CHARACTER(len=80)::PATHout
+CHARACTER(len=2)::CROP
+CHARACTER(len=10)::BEGIN,BEGIN2
+CHARACTER(len=80)::APU1,APU2
+
+!write(*,*)'inside interface_SPECIESdata1P'
+
+APU1=TRIM('/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/')
+PATHout=APU1
+!write(*,*)'PATHout:',PATHout
+RETURN
+END SUBROUTINE interface_speciesDATA1P
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE interface_LAND(day_number)
 USE parm
@@ -2655,27 +2714,40 @@ TYPE(LAND_S) LAND_C
 INTEGER::YRPLT,YREND,MDATE,day_number,idp
 REAL::LL(NL),delgI
 REAL::KERROS(NL),TILAVUUS(NL),MASSA(NL)
-INTEGER::L,VAIHTO
+INTEGER::L,VAIHTO,next_ihru,i1
+REAL::IRRAMT_DSSAT
 
+
+
+!if(day_number==155)STOP
 interface_ihru=ihru
+
 PlantI=P_GROWTH(ihru)
+IF(PLANT_SOURCE(ihru).EQ.'SWAT')THEN
+PlantI%XHLAI=laiday(ihru)
+PlantI%XLAI=laiday(ihru)
+PlantI%CANHT=cht(ihru)
+END IF
+CALL PUT(PlantI)
 ToSwat=ToSwat_NEW(interface_ihru)
 SOILPROP=SOILPROP_NEW(interface_ihru)
-!write(*,*)'interface_LAND,MDATE=',MDATE_interface(ihru),'ihru=',ihru
+
+
+!if(PlantI%CANHT>0.AND.PlantI%XHLAI==0)STOP
 
 LAND_C=LAND_NEW(interface_ihru)
+
+!if(interface_ihru==40)THEN
+!write(*,*)'interface_LAND:RWU=',LAND_C%RWU,'ihru=',interface_ihru,'CANHT=',laiday(ihru)
+!write(*,*)'------BEGIN---------BEGIN-----------BEGIN---------------'
+!END IF
 ORIGINAL_DSSAT(interface_ihru,1,1)=PlantI%TOPWT
 ORIGINAL_DSSAT(interface_ihru,2,1)=PlantI%WTNCAN
 ORIGINAL_DSSAT(interface_ihru,3,1)=ToSwat%PPlant2_kg
 
 CALL PUT(ToSwat)
+!LAND_C%SW=sol_st(:,interface_ihru)
 CALL PUT(LAND_C)
-!if(ihru==1)THEN
-!write(*,*)'Interface_LAND,ihru=',ihru
-!write(*,*)'CROP=',CONTROL_NEW(ihru)%CROP
-!write(*,*)CONTROL_NEW%CROP
-!write(*,*)'PlantI%AREALF=',PlantI%AREALF
-!END IF
 
 ISWITCH=KYTKIN_ALL(interface_ihru)
 CALL PUT(ISWITCH)
@@ -2686,9 +2758,6 @@ CALL PUT(ISWITCH)
 !CONTROL%YRDOY=
 !CONTROL%YRSIM=
 
-!write(*,*)'PLANTING_DSSAT=',PLANTING_DSSAT(ihru),'ihru=',ihru
-!if(interface_ihru==1)THEN
-!write(*,*)'inteface_ihru=',interface_ihru,PlantI%PROSTI
 
 IF(PLANT_SOURCE(ihru).EQ.'DSAT')THEN
 IF(ihru==4)THEN
@@ -2697,7 +2766,7 @@ STOP
 END IF
 END IF
 !write(*,*)'-------------------OMA_INTERFACE-----------------------------------------------'
-!STOP
+
 !END IF
 CALL PUT(PlantI)
 
@@ -2712,7 +2781,7 @@ YRPLT_interface(ihru)=10000000
 year_old(ihru)=iyr
 VAIHTO=1
 write(*,*)'PLANTING_DSSAT=',PLANTING_DSSAT(ihru),'SOURCE=',PLANT_SOURCE(ihru)
-!STOP
+
 END IF
 IF(PLANTING_DSSAT(ihru)==1)THEN
 YRPLT_interface(ihru)=(iyr)*1000+day_number
@@ -2739,13 +2808,22 @@ CALL PUT(CONTROL)
 !write(*,*)'Interface','PLANTING_DSSAT=',PLANTING_DSSAT(ihru)
 !if(CONTROL%DYNAMIC.EQ.RATE)THEN
 !write(*,*)'To LAND,DYNAMIC=',RATE
-!STOP
+
 !END IF
 SOILPROP=SOILPROP_NEW(ihru)
+
+SOILPROP%SW(1)=sol_st(1,interface_ihru)/sol_z(1,interface_ihru)
+
+DO i1=2,sol_nly(interface_ihru)
+SOILPROP%SW(i1)=sol_st(i1,interface_ihru)/(sol_z(i1,interface_ihru)-sol_z(i1-1,interface_ihru))
+END DO
+CALL GET(LAND_C)
+LAND_C%SW=SOILPROP%SW
+CALL PUT(LAND_C)
 CALL PUT(SOILPROP)
 if(SUM(SOILPROP%DLAYR)==0)THEN
 write(*,*)'BEFORE INterface_LAND,SUM(SOILPROP%DLAYR)=',SUM(SOILPROP%DLAYR),'interface_ihru=',interface_ihru,'ihru',ihru
-!write(*,*)SOILPROP_NEW(ihru)%DLAYR
+write(*,*)SOILPROP_NEW(ihru)%DLAYR
 STOP
 END IF
 !	IF(ihru==1)THEN
@@ -2763,26 +2841,80 @@ IF(VAIHTO==1)THEN
 CONTROL_NEW(ihru)%DYNAMIC=SEASINIT
 CALL LAND(CONTROL_NEW(ihru),ISWITCH,YRPLT,MDATE,YREND)
 CONTROL_NEW(ihru)%DYNAMIC=RATE
-!STOP
+
 VAIHTO=0
 END IF
 
-if(PLANTING_DSSAT(interface_ihru)>0)write(*,*)'To LAND,PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru),&
-'ihru=',interface_ihru,PLANT_SOURCE(interface_ihru),'iida=',iida,'i=',i
+!if(PLANTING_DSSAT(interface_ihru)>0)write(*,*)'To LAND,PLANTING_DSSAT=',PLANTING_DSSAT(interface_ihru),&
+!'ihru=',interface_ihru,PLANT_SOURCE(interface_ihru),'iida=',iida,'i=',i
+CALL PUT(SPAM_INTERFACE(interface_ihru))
+!if(interface_ihru>1)write(*,*)'interface_LAND,before rate,irrigation=',aird(interface_ihru),aird(interface_ihru-1)
+CALL PUT('MGMT','IRRAMT',aird(interface_ihru))
+CALL GET('MGMT','IRRAMT',IRRAMT_DSSAT)
+!write(*,*)'IRRAMT=',IRRAMT_DSSAT
+!write(*,*)'aird=',aird
+
+IF(aird(interface_ihru)>0)THEN
+!write(*,*)'IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII'
+irrigation_LKM(interface_ihru)=1+irrigation_LKM(interface_ihru)
+!write(*,*)'INterface2, max amount irrigation=',maxval(irrigation_LKM),'i=',interface_ihru
+END IF
+
+!write(*,*)'INterface2, max amount irrigation occasion=',maxval(irrigation_LKM),'i=',interface_ihru
+!write(*,*)irrigation_LKM(1:50)
+!write(*,*)'IRRIGATION LKM at 7=',irrigation_LKM(7),'SOURCE=',PLANT_SOURCE(7)
+!write(*,*)'IRRIGATION LKM at 7=',irn(7),'SOURCE=',PLANT_SOURCE(7)
+
+
+CALL GET(LAND_C)
+!if(interface_ihru==40)THEN
+!write(*,*)'interface_LAND:BEFOR RATE RWU=',LAND_C%RWU,'ihru=',interface_ihru
+!write(*,*)'------BEGIN---------TO RATE-----------BEGIN---------------'
+
+!write(*,*)'BEFORE RATE:LAND_NEW(40)%RWU:',LAND_NEW(40)%RWU(1:5)
+!END IF
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !Rate
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !write(*,*)'To Land, Rate'
 CALL LAND(CONTROL_NEW(ihru),ISWITCH,YRPLT,MDATE,YREND)
+CALL GET(LAND_C)
+!if(interface_ihru==40)THEN
+!write(*,*)'interface_LAND:AFTER RATE RWU=',LAND_C%RWU,'ihru=',interface_ihru
+!write(*,*)'------BEGIN---------FROM RATE-----------BEGIN---------------'
+!END IF
+
+
+
 CALL GET(PlantI)
 CALL GET(SOILPROP)
 SOILPROP_NEW(interface_ihru)=SOILPROP
 if(SUM(SOILPROP%DLAYR)==0)THEN
 write(*,*)'MIDDLE INterface_LAND,SUM(SOILPROP%DLAYR)=',SUM(SOILPROP%DLAYR),'interface_ihru=',interface_ihru,'ihru',ihru
-!write(*,*)SOILPROP_NEW(ihru)%DLAYR
+write(*,*)SOILPROP_NEW(ihru)%DLAYR
 STOP
 END IF
+CALL GET(SPAM1)
+ep_max=SPAM1%EOP
+pet_day=SPAM1%EO ! Potential
+es_day=SPAM1%ES  ! Actual amount of evaporation that occurs at day
+ep_day=SPAM1%EP ! Actual amount of transpiration
+!etday=SPAM1%ET
+IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
+!ep_max=SPAM1%EOP
+etday=SPAM1%ET
+END IF
 
+!write(*,*)'BEFORE PET_DAY=',pet_day
 
+call etact
+!write(*,*)'Interface_LAND, after etact'
+!write(*,*)'pet_day=',pet_day,'ep_max=',ep_max
+!write(*,*)'_E_E_E_E_E_E_E_E_E_E_E_E_E_E_E_E_E_'
+!write(*,*)'After rate:EP_MAX=',ep_max,'SOURCE:',PLANT_SOURCE(interface_ihru)
+!write(*,*)'pet_day=',pet_day
+
+SPAM_INTERFACE(interface_ihru)=SPAM1
 
 CONTROL_NEW(ihru)%DYNAMIC=INTEGR
 CONTROL=CONTROL_NEW(ihru)
@@ -2805,27 +2937,66 @@ sol_nh3(:,interface_ihru)=sol_nh3(:,interface_ihru)/(hru_ha(interface_ihru))
 sol_no3(:,interface_ihru)=sol_no3(:,interface_ihru)/(hru_ha(interface_ihru))
 
 
+
+
 !if(ihru==1)write(*,*)'To land,DYNAMIC=',CONTROL%DYNAMIC
 CALL GET(PlantI)
+CALL GET(SPAM1)
 !IF(YRPLT<(iyr+curyr-1)*1000+day_number)THEN
 !IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
 !write(*,*)'Interface2,WTNLF=',PlantI%WTNLF,&
 !'ihru',interface_ihru,PLANT_SOURCE(interface_ihru),YRPLT_interface(interface_ihru)
-!IF(PlantI%WTNLF==0)STOP
-!END IF
-!END IF
 
+!END IF
+!END IF
+!IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
+!ep_day=SPAM1%EP
+!etday=SPAM1%ET !WAS EVAP          !Actual
+!canev=SPAM1%EP
+
+!END IF
+next_ihru=interface_ihru
+if(interface_ihru.EQ.nhru)next_ihru=1
+
+!IF(PLANT_SOURCE(next_ihru).EQ.'SWAT')THEN
+!ep_max=SPAM1%EOP
+!write(*,*)'EP_MAX=',ep_max,'SOURCE:',PLANT_SOURCE(interface_ihru)
+ep_max=SPAM1%EOP
+pet_day=SPAM1%EO ! Potential
+es_day=SPAM1%ES
+etday=SPAM1%ET
+!END IF
+!write(*,*)'EP_day=',ep_day,'etday=',etday,'SOURCE:',PLANT_SOURCE(interface_ihru)
+!ep_day=SPAM1%EP
+!write(*,*)'ep_day=',ep_day,'etday=',etday,'SOURCE=',PLANT_SOURCE(interface_ihru)
+
+!write(*,*)'.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o'
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !INTEGRATE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!write(*,*)'INTERFACE_LAND,BEFORE,INTEG,SOILPROP=',SOILPROP%DLAYR
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+!write(*,*)'INTERFACE_LAND,TO INTEGRATE'
 !write(*,*)'To Land, INTEGR,i=',i
 CALL LAND(CONTROL_NEW(ihru),ISWITCH,YRPLT,MDATE,YREND)
+!write(*,*)'INTERFACE_ALND,FROM INTEGRATE'
+CALL GET(LAND_C)
+if(interface_ihru==40)THEN
+!write(*,*)'interface_LAND:AFTER RATE RWU=',LAND_C%RWU,'ihru=',interface_ihru
+!write(*,*)'------BEGIN---------BEGIN-----------BEGIN---------------'
+END IF
 
+
+
+CALL GET(SPAM1)
+SPAM_INTERFACE(interface_ihru)=SPAM1
 
 SOILPROP_NEW(interface_ihru)=SOILPROP
 if(SUM(SOILPROP%DLAYR)==0)THEN
 write(*,*)'After INterface_LAND,SUM(SOILPROP%DLAYR)=',SUM(SOILPROP%DLAYR),'interface_ihru=',interface_ihru,'ihru',ihru
-!write(*,*)SOILPROP_NEW(ihru)%DLAYR
+write(*,*)SOILPROP_NEW(ihru)%DLAYR
 STOP
 END IF
 
@@ -2836,7 +3007,7 @@ IF(YRPLT+1<(iyr+curyr-1)*1000+day_number)THEN
 IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
 !write(*,*)'Interface2,WTNLF=',PlantI%WTNLF,&
 !'ihru',interface_ihru,PLANT_SOURCE(interface_ihru),YRPLT_interface(interface_ihru)
-!IF(PlantI%WTNLF==0)STOP
+
 END IF
 END IF
 !write(*,*)interface_ihru,PlantI%NVEG0
@@ -2844,9 +3015,12 @@ END IF
 P_GROWTH(ihru)=PlantI	
 CONTROL_NEW(ihru)%DYNAMIC=OUTPUT
 CONTROL=CONTROL_NEW(ihru)
-CALL PUT(CONTROL)
-!if(ihru==1)write(*,*)'To LAND, DYNAMIC=',CONTROL%DYNAMIC
 
+
+CALL PUT(CONTROL)
+!write(*,*)'TO LAND,DYNAMIC=',CONTROL%DYNAMIC
+!if(ihru==1)write(*,*)'To LAND, DYNAMIC=',CONTROL%DYNAMIC
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 CALL LAND(CONTROL,ISWITCH,YRPLT,MDATE,YREND)
 CONTROL_NEW(ihru)%DYNAMIC=RATE
 
@@ -2875,7 +3049,59 @@ delgI= 0.
 	!write(*,*)'phuacc=',phuacc(interface_ihru)
 END IF
 
+!IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
+ep_day=SPAM1%EP
+etday=SPAM1%ET ! was evap          !Actual
+ep_max=SPAM1%EOP
 
+!write(*,*)'After integration etday=',SPAM1%ET,'ET=',SPAM1%ET
+!ELSE
+
+!write(*,*)'ep_day=',ep_day,'etday=',etday,'SOURCE=',PLANT_SOURCE(interface_ihru)
+
+!END IF
+next_ihru=interface_ihru
+if(interface_ihru.EQ.nhru)next_ihru=1
+
+!IF(PLANT_SOURCE(next_ihru).EQ.'SWAT')THEN
+!ep_max=SPAM1%EOP
+!END IF
+!write(*,*)'EP_MAX',ep_max
+!write(*,*)'EP_day=',ep_day,'etday=',etday,'SOURCE:',PLANT_SOURCE(interface_ihru)
+!ep_day=SPAM1%EP
+!write(*,*)'ep_day=',ep_day,'etday=',etday,'SOURCE=',PLANT_SOURCE(interface_ihru)	
+
+!write(*,*)'.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o.o'
+
+
+!etday=SPAM1%ET		!Actual
+es_day=SPAM1%ES 
+plt_pet=SPAM1%EO
+!pet_day=SPAM1%EO ! Potential 
+
+!write(*,*)'ET=',SPAM1%ET,'EO=',SPAM1%EO
+IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
+!plt_et(interface_ihru)=SPAM1%ET
+!plt_pet(interface_ihru)=SPAM1%EO
+
+etday=SPAM1%ET          !Actual
+!if(phuacc(interface_ihru)>0)write(*,*)'Phuacc=',phuacc(interface_ihru)
+END IF
+es_day=SPAM1%ES
+!pet_day=SPAM1%EO ! Potential
+
+
+!END IF
+
+!sol_st(1,interface_ihru)=SOILPROP%SW(1)*sol_z(1,interface_ihru)
+
+!DO i1=2,sol_nly(interface_ihru)
+!sol_st(i1,interface_ihru)=SOILPROP%SW(i1)*(sol_z(i1,interface_ihru)-sol_z(i1-1,interface_ihru))
+!END DO
+
+
+
+!write(*,*)'act.evapo=',etday,'act.trans=',ep_day,'act.evapo SOIL=',es_day,'pot.evapo',pet_day
 
 sol_fc(interface_ihru,:)=SOILPROP%SW-SOILPROP%LL
 albday=SOILPROP%SALB
@@ -2899,14 +3125,15 @@ SOILPROP_NEW(ihru)=SOILPROP
 IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')THEN
 !write(*,*)'Interface_LAND',bio_ms(interface_ihru),'SOURCE=',PLANT_SOURCE(interface_ihru),'CROP=',CONTROL%CROP
 !write(*,*)'MDATE=',MDATE,'YREND=',PlantI%YREND
-!IF(MDATE<10000000)STOP
+
 END IF
 IF(yr_skip(interface_ihru)==1)PLANTING_DSSAT(interface_ihru)=17
 !write(*,*)'interface_LAND,yldanu=',yldanu(interface_ihru),'ihru=',ihru,'SOURCE=',PLANT_SOURCE(interface_ihru)
 
+LAND_NEW(interface_ihru)=LAND_C
 
-
-
+!if(bio_yrms(interface))
+!write(*,*)'bio_yrms=',bio_yrms(interface_ihru)
 
 ! CALL interface_mapping(cpnm(idplt(i)),DSSAT_CROP,RESIDUE_TYPE(i),FILE_ID)
 !    write(*,*)'INTERFACE;PLANT=',cpnm(idplt(i)),'                    DSSAT=',DSSAT_CROP!
@@ -2923,7 +3150,7 @@ IF(yr_skip(interface_ihru)==1)PLANTING_DSSAT(interface_ihru)=17
           !                      !P_GROWTH(i)%ECONO='CO0001'!'LAT001'!'999991'!'CAND01'
           !                      CALL interface_ECONO(DSSAT_CROP,P_GROWTH(i)%ECONO)
           !                      PLANT_SOURCE(i)='DSAT'
-          !                      !STOP
+          !                      
           !                      ELSE
           !                      PLANT_SOURCE(i)='SWAT'
           !                      END IF
@@ -3004,7 +3231,7 @@ DYNAMIC=CONTROL_NEW(ihru)%DYNAMIC
 !	WATAVL=precipday
 !    CALL MULCHWATER(CONTROL_NEW(ihru),KYTKIN,WATAVL,MULCH_new(ihru))
 
-
+!write(*,*)'interface2,IRRIG=',IRRIG
 WINF=inflpcp
 WINF=WINF+IRRIG
 TDLNO=ldrain(ihru)
@@ -3016,12 +3243,12 @@ DRN=DRN_SWAT
 SNOW=sno_hru(ihru)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !TDFC= 
-SW(1)=sol_st(1,ihru)/sol_z(1,ihru)
-SW(1)=SW(1)+SWDELTX(1)+IRRIG
-sol_st(1,ihru)=sol_st(1,ihru)+DLAYR(1)*10*SWDELTX(1)
+!SW(1)=sol_st(1,ihru)/sol_z(1,ihru)
+!SW(1)=SW(1)+SWDELTX(1)+IRRIG
+!sol_st(1,ihru)=sol_st(1,ihru)+DLAYR(1)*10*SWDELTX(1)
 DO i1=2,sol_nly(ihru)
-	SW(i1)=(sol_st(i1,ihru))/(sol_z(i1,ihru)-sol_z(i1-1,ihru))
-	SW(i1)=SW(i1)+SWDELTX(i1)
+!	SW(i1)=(sol_st(i1,ihru))/(sol_z(i1,ihru)-sol_z(i1-1,ihru))!
+!	SW(i1)=SW(i1)+SWDELTX(i1)
 	sol_st(i1,ihru)=sol_st(i1,ihru)+DLAYR(i1)*10*SWDELTX(i1)
 END DO
 	
@@ -3072,7 +3299,7 @@ END IF
 !      SWDEF  = MAX(0.0,(WET1 - (TSWTOP)))                 ! old, upper limit for automatic irrigation does not work
       SWDEF  = MAX(0.0,((WET1*THETAU*0.01) - TSWTOP))
 	IF(SWDEF<0)THEN
-!write(*,*)'interface_WATBAL,SWDEF=',SWDEF
+write(*,*)'interface_WATBAL,SWDEF=',SWDEF
 STOP
 END IF
 RETURN
@@ -3096,7 +3323,8 @@ ELSE
 write(*,*)'Error in opening file. Terminating performance'
 STOP
 END IF
-!write(*,*)'Moi'
+write(*,*)'Moi',useDSSAT
+STOP
 END SUBROUTINE READ_COUPLING
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE interface_DSSAT_switch
@@ -3242,10 +3470,29 @@ IMPLICIT NONE
 END SUBROUTINE interface_ETACT
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 SUBROUTINE interface_plant
+USE ModuleDefs
+USE MOduleData
 implicit none
+
+TYPE(LAND_S) LAND_C
 !write(*,*)'TO simulate SWAT plants',interface_ihru
 CALL plantmod ! from SWAT side to simulate trees and perennials
 
+call get(LAND_C)
+if(interface_ihru==40)THEN
+WRITE(*,*)'interface_plant,RWU=',LAND_C%RWU
+IF(LAND_C%RWU(1)>10)THEN
+write(*,*)'interface_plant:STOPPING'
+LAND_C%RWU=0
+CALL PUT(LAND_C)
+END IF
+IF(LAND_C%RWU(1)<0)THEN
+write(*,*)'interface_plant:STOPPING'
+LAND_C%RWU=0
+CALL PUT(LAND_C)
+END IF
+
+end if
 END SUBROUTINE interface_plant
 
 

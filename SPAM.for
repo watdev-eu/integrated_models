@@ -55,7 +55,7 @@ C=======================================================================
 
       INTEGER DYNAMIC, L, NLAYR
 
-      REAL CANHT, CO2, SRAD, TAVG, 
+      REAL CANHT, DSAT_CO2, SRAD, TAVG, 
      &    TMAX, TMIN, WINDSP, XHLAI, XLAI
       REAL CEF, CEM, CEO, CEP, CES, CET, CEVAP 
       REAL EF, EM, EO, EP, ES, ET, EVAP 
@@ -68,7 +68,7 @@ C=======================================================================
      &    SAT(NL), ST(NL), SW(NL), SW_AVAIL(NL), !SWAD(NL), 
      &    SWDELTS(NL), SWDELTU(NL), SWDELTX(NL), UPFLOW(NL)
       REAL ES_LYR(NL)
-
+	REAL OLD_RWU(NL),OLD_TRWUP
 !     ORYZA model
 !     Root water uptake computed by some plant routines (optional)
       REAL UH2O(NL)
@@ -94,7 +94,8 @@ C=======================================================================
       TYPE (FloodWatType) FLOODWAT
       TYPE (MulchType)   MULCH
       TYPE (WeatherType)  WEATHER
-
+      TYPE (SpamType) SPAM_1
+      TYPE (LAND_S) PLANT_S	
 !     Transfer values from constructed data types into local variables.
       CROP    = CONTROL % CROP
       DYNAMIC = CONTROL % DYNAMIC
@@ -117,7 +118,7 @@ C=======================================================================
 
       FLOOD  = FLOODWAT % FLOOD
 
-      CO2    = WEATHER % CO2
+      DSAT_CO2    = WEATHER % CO2
       SRAD   = WEATHER % SRAD  
       TAMP   = WEATHER % TAMP  
       TAV    = WEATHER % TAV   
@@ -145,7 +146,12 @@ C=======================================================================
       CALL PUT('SPAM', 'KCB', -99.0)
       CALL PUT('SPAM', 'KE', -99.0)
       CALL PUT('SPAM', 'KC', -99.0)
-
+      SPAM_1%EOP=EOP
+      SPAM_1%EP=EP
+      SPAM_1%ES=ES
+      !SPAM_1%RWU=RWU
+      !SPAM_1%TRWUP=TRWUP
+      CALL PUT(SPAM_1)	 
 !***********************************************************************
 !***********************************************************************
 !     Seasonal initialization - run once per season
@@ -178,9 +184,9 @@ C=======================================================================
      &    SRFTEMP, ST)   !Output
      	   END SELECT
       ENDIF
-	!write(*,*)'SPAM,RUNINIT,ST=',ST
+	
 !     ---------------------------------------------------------
-	write(*,*)'SPAM:ROOTWU'
+
       IF (MEEVP .NE. 'Z') THEN
         CALL ROOTWU(SEASINIT,
      &      DLAYR, LL, NLAYR, PORMIN, RLV, RWUMX, SAT, SW,!Input
@@ -202,15 +208,16 @@ C=======================================================================
 
 !     ----------------------------
         END SELECT
-!	write(*,*)'SPAM:To TRANS'
+
+
 !       Initialize plant transpiration variables
-        CALL TRANS(DYNAMIC, MEEVP, 
-     &    CO2, CROP, EO, ET0, EVAP, KTRANS,               !Input
+        CALL TRANS(CONTROL,DYNAMIC, MEEVP, 
+     &    DSAT_CO2, CROP, EO, ET0, EVAP, KTRANS,               !Input
      &    WINDSP, XHLAI,                                  !Input
-     &    WEATHER,                                        !Input
+     &    WEATHER,ET_ALB,                                        !Input
      &    EOP)                                            !Output
       ENDIF
-	write(*,*)'SPAM:To MULCH_EVAP'
+
       CALL MULCH_EVAP(DYNAMIC, MULCH, EOS, EM)
 
 !     ---------------------------------------------------------
@@ -222,7 +229,7 @@ C=======================================================================
      &    EOP, EP, ES, RWU, TRWUP)                        !Output
         ENDIF
       ENDIF
-	write(*,*)'SPAM To OPSPAM'
+
 !     Call OPSPAM to open and write headers to output file
       IF (IDETW .EQ. 'Y') THEN
         CALL OPSPAM(CONTROL, ISWITCH, FLOODWAT, TRWU,
@@ -245,7 +252,25 @@ C=======================================================================
       CALL PUT('SPAM', 'EP',  EP)
       CALL PUT('SPAM', 'ES',  ES)
       CALL PUT('SPAM', 'ET',  ET)
-	write(*,*)'SPAM:END OF SEASINIT'
+
+	CALL GET(SPAM_1)
+	SPAM_1%CEF=CEF
+	SPAM_1%CEM=CEM
+	SPAM_1%CEO=CEO
+	SPAM_1%CEP=CEP
+	SPAM_1%CES=CES
+	SPAM_1%CET=CET
+	SPAM_1%CEVAP=CEVAP
+	SPAM_1%EF=EF
+	SPAM_1%EM=EM
+	SPAM_1%EO=EO
+	SPAM_1%EP=EP
+	SPAM_1%ES=ES
+	SPAM_1%ET=ET
+	CALL PUT(SPAM_1)
+
+!	PLANT_S%XHLAI=XHLAI
+!	CALL PUT(PLANT_S)
 !***********************************************************************
 !***********************************************************************
 !     DAILY RATE CALCULATIONS
@@ -253,6 +278,10 @@ C=======================================================================
       ELSEIF (DYNAMIC .EQ. RATE) THEN
 !-----------------------------------------------------------------------
       SWDELTX = 0.0
+
+	
+!	CALL GET(PLANT_S)
+!	XHLAI=PLANT_S%XHLAI
 !     ---------------------------------------------------------
       IF (meevp .NE.'Z') THEN  !LPM 02dec14 to use the values from ETPHOT
           SELECT CASE (METMP)
@@ -261,7 +290,7 @@ C=======================================================================
      &        SOILPROP, SW, TAVG, TMAX, TMIN, TAV, WEATHER,   !Input
      &        SRFTEMP, ST)                                    !Output
           CASE DEFAULT  
-!	write(*,*)'SPAM,RATE,ST=',ST,'meevp=',meevp,'METMP=',METMP
+
 !     7/21/2016 - DSSAT method is default, per GH
 !     CASE ('D')  !DSSAT soil temperature
         CALL STEMP(CONTROL, ISWITCH,
@@ -270,12 +299,12 @@ C=======================================================================
           END SELECT
       ENDIF
 
-!  	 write(*,*)'SPAM,RATE,ST=',ST,'meevp=',meevp,'METMP=',METMP
+      
 
 !-----------------------------------------------------------------------
 !     POTENTIAL ROOT WATER UPTAKE
 !-----------------------------------------------------------------------
-     	!write(*,*)'SPAM ISWWAT=',ISWWAT
+     
 	 IF (ISWWAT .EQ. 'Y') THEN
 !       Calculate the availability of soil water for use in SOILEV.
         DO L = 1, NLAYR
@@ -289,13 +318,21 @@ C       Calculate potential root water uptake rate for each soil layer
 C       and total potential water uptake rate.
 	
           IF (XHLAI .GT. 0.0) THEN
+	!IF(interface_ihru==40)write(*,*)'SPAM:TO ROOTWU'
             CALL ROOTWU(RATE,
      &          DLAYR, LL, NLAYR, PORMIN, RLV, RWUMX, SAT, SW,!Input
      &          RWU, TRWUP)                           !Output
-          ELSE
+        IF(interface_ihru==40)THEN
+	!	write(*,*)'SPAM,RWU=',RWU,'SOURCE=',PLANT_SOURCE(interface_ihru)	
+	END IF  
+	ELSE
             RWU   = 0.0
             TRWUP = 0.0
           ENDIF
+	IF(interface_ihru==40)THEN
+	! write(*,*)'SPAM,RWU=',RWU,'SOURCE=',PLANT_SOURCE(interface_ihru)
+	! write(*,*) 'ihru=',interface_ihru,'XHLAI=',XHLAI
+	END IF
 !-----------------------------------------------------------------------
 !         POTENTIAL EVAPOTRANSPIRATION
 !-----------------------------------------------------------------------
@@ -313,7 +350,8 @@ C       and total potential water uptake rate.
      &       CANHT,   !Needed by dynamic Penman-Monteith
      &       EO,      !Output
      &       ET0)     !Output hourly Priestly-Taylor with VPD effect
-
+	!write(*,*)'SPAM:CANHT=',CANHT,'EO=',EO,'XHLAI=',XHLAI
+	!write(*,*)'Plant_SOURCE=',PLANT_SOURCE(interface_ihru)
 !-----------------------------------------------------------------------
 !         POTENTIAL SOIL EVAPORATION
 !-----------------------------------------------------------------------
@@ -322,14 +360,13 @@ C       and total potential water uptake rate.
 !             only very slightly (max 0.5% yield diff for one peanut
 !             experiment).  No difference to other crop models.
           CALL PSE(EO, KSEVAP, XLAI, EOS)
-
+	!write(*,*)'SPAM,After PSE,EO=',EO
 !-----------------------------------------------------------------------
 !         ACTUAL SOIL, MULCH AND FLOOD EVAPORATION
 !-----------------------------------------------------------------------
 !         Initialize soil, mulch and flood evaporation
           ES = 0.; EM = 0.; EF = 0.; EVAP = 0.0
           UPFLOW = 0.0; ES_LYR = 0.0
-
 !         First meet evaporative demand from floodwater
           IF (FLOOD .GT. 1.E-4) THEN
             CALL FLOOD_EVAP(XLAI, EO, EF)   
@@ -343,7 +380,7 @@ C       and total potential water uptake rate.
           ELSE
             EOS_SOIL = EOS
           ENDIF
-
+	 
 !         Next meet evaporative demand from mulch
           IF (EOS_SOIL > 1.E-6 .AND. INDEX('RSM',MEINF) > 0) THEN
             CALL MULCH_EVAP(DYNAMIC, MULCH, EOS_SOIL, EM)
@@ -354,8 +391,8 @@ C       and total potential water uptake rate.
               EOS_SOIL = 0.0
             ENDIF
           ENDIF
-	!write(*,*)'SPAM: EOS_SOIL',EOS_SOIL,'STOP'
-	!write(*,*)'SPAM, Soil water:',SW	
+	
+		
 !         Soil evaporation after flood and mulch evaporation
           IF (EOS_SOIL > 1.E-6) THEN
             SELECT CASE(MESEV)
@@ -374,16 +411,16 @@ C       and total potential water uptake rate.
             CASE DEFAULT ! Sulieman-Ritchie soil evaporation routine is default
 !             Note that this routine calculates UPFLOW, unlike the SOILEV.
 !             Calculate the availability of soil water for use in SOILEV.
+		
               CALL ESR_SoilEvap(
      &          EOS_SOIL, SOILPROP, SW, SWDELTS,          !Input
      &          ES, ES_LYR, SWDELTU, UPFLOW)              !Output
             END SELECT
 !           ------------------------
           ENDIF
-
+		
 !         Total evaporation from soil, mulch, flood
           EVAP = ES + EM + EF
-
 !-----------------------------------------------------------------------
 !         Potential transpiration - model dependent
 !-----------------------------------------------------------------------
@@ -398,18 +435,18 @@ C       and total potential water uptake rate.
 !              EOP = MAX(0.0, EOP)
 !              EOP = MIN(EO, EOP)
 !
-!              TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+!              TRAT = TRATIO(CROP, DSAT_CO2, TAVG, WINDSP, XHLAI)
 !              EOP = EOP * TRAT
-
+		!write(*,*)'BEFORE TRANS,EO=',EO
 !            CASE DEFAULT
 !             For all models except ORYZA
-              CALL TRANS(RATE, MEEVP, 
-     &        CO2, CROP, EO, ET0, EVAP, KTRANS,           !Input
+              CALL TRANS(CONTROL,RATE, MEEVP, 
+     &        DSAT_CO2, CROP, EO, ET0, EVAP, KTRANS,           !Input
      &        WINDSP, XHLAI,                              !Input
-     &        WEATHER,                                    !Input
+     &        WEATHER,ET_ALB,                                    !Input
      &        EOP)                                        !Output
 !            END SELECT
-            
+            !write(*,*)'SPAM:EOP=',EOP,'EO=',EO
           ELSE
             EOP = 0.0
           ENDIF
@@ -417,16 +454,22 @@ C       and total potential water uptake rate.
 !-----------------------------------------------------------------------
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
+!	IF(PLANT_SOURCE(interface_ihru).EQ.'DSAT')	
+      !write(*,*)'SPAM,EP TRANSPIRATION: XHLAI=',XHLAI,'EOP=',EOP
           IF (XHLAI .GT. 1.E-4 .AND. EOP .GT. 1.E-4) THEN
             !These calcs replace the old SWFACS subroutine
             !Stress factors now calculated as needed in PLANT routines.
             EP = MIN(EOP, TRWUP*10.)
+	write(*,*)'SPAM,EP TRANSPIRATION'
           ELSE
             EP = 0.0
           ENDIF
         ENDIF
       ENDIF
 
+
+	OLD_RWU=RWU
+	OLD_TRWUP=TRWUP
 !-----------------------------------------------------------------------
 !     ALTERNATE CALL TO ENERGY BALANCE ROUTINES
 !-----------------------------------------------------------------------
@@ -443,7 +486,10 @@ C       and total potential water uptake rate.
      &    EOP, EP, ES, RWU, TRWUP)                        !Output
           EVAP = ES  !CHP / BK 7/13/2017
         ENDIF
-
+	IF(PLANT_SOURCE(interface_ihru).EQ.'SWAT')THEN
+	RWU=OLD_RWU
+	TRWUP=OLD_TRWUP
+	END IF
 !-----------------------------------------------------------------------
 !       ACTUAL ROOT WATER EXTRACTION
 !-----------------------------------------------------------------------
@@ -465,6 +511,13 @@ C       and total potential water uptake rate.
      &      EP, RWU,                                      !Input/Output
      &      SWDELTX, TRWU)                                !Output
         ENDIF   !ISWWAT = 'Y'
+
+       IF(PLANT_SOURCE(interface_ihru).EQ.'SWAT')THEN
+        RWU=OLD_RWU
+        TRWUP=OLD_TRWUP
+        END IF
+
+
       ENDIF
 
 !     Transfer computed value of potential floodwater evaporation to
@@ -479,7 +532,25 @@ C       and total potential water uptake rate.
       CALL PUT('SPAM', 'ES',  ES)
       CALL PUT('SPAM', 'EOP', EOP)
       CALL PUT('SPAM', 'EVAP',EVAP)
-
+	        CALL GET(SPAM_1)
+        !SPAM_1%CEF=CEF
+        !SPAM_1%CEM=CEM
+        !SPAM_1%CEO=CEO
+        !SPAM_1%CEP=CEP
+        !SPAM_1%CES=CES
+        !SPAM_1%CET=CET
+        !SPAM_1%CEVAP=CEVAP
+        SPAM_1%EF=EF
+        SPAM_1%EM=EM
+        SPAM_1%EO=EO
+        SPAM_1%EP=EP
+        SPAM_1%ES=ES
+        SPAM_1%ET=ET
+	SPAM_1%EOP=EOP
+	SPAM_1%EVAP=EVAP
+	!write(*,*)'SPAM,RATE,EVAP=',EVAP,'EP=',EP
+        CALL PUT(SPAM_1)
+       
 !***********************************************************************
 !***********************************************************************
 !     DAILY INTEGRATION
@@ -487,8 +558,26 @@ C       and total potential water uptake rate.
       ELSEIF (DYNAMIC .EQ. INTEGR) THEN
 !-----------------------------------------------------------------------
       IF (ISWWAT .EQ. 'Y') THEN
+	CALL GET(SPAM_1)
+	EVAP=SPAM_1%EVAP
+	EP=SPAM1%EP
+	CEF=SPAM1%CEF
+	EF=SPAM_1%EF
+	EM=SPAM_1%EM
+	CEM=SPAM_1%CEM
+	EO=SPAM_1%EO
+	CEO=SPAM_1%CEO
+	CEP=SPAM_1%CEP
+	EP=SPAM_1%EP
+	CEP=SPAM_1%CEP
+	CES=SPAM_1%CES
+	CEVAP=SPAM_1%CEVAP
+	EVAP=SPAM_1%EVAP
+	ES=SPAM_1%ES
+	
 !       Perform daily summation of water balance variables.
         ET  = EVAP + EP
+!	write(*,*)'SPAM,INTEG: EVAP=',EVAP,'EP=',EP
         CEF = CEF + EF
         CEM = CEM + EM
         CEO = CEO + EO
@@ -520,6 +609,22 @@ C KB
       CALL PUT('SPAM', 'CET', CET)
       CALL PUT('SPAM', 'ET',  ET)
       CALL PUT('SPAM', 'CEVAP', CEVAP)
+        SPAM_1%CEF=CEF
+        SPAM_1%CEM=CEM
+        SPAM_1%CEO=CEO
+        SPAM_1%CEP=CEP
+        SPAM_1%CES=CES
+        SPAM_1%CET=CET
+        SPAM_1%CEVAP=CEVAP
+        SPAM_1%EF=EF
+        SPAM_1%EM=EM
+        SPAM_1%EO=EO
+        SPAM_1%EP=EP
+        SPAM_1%ES=ES
+        SPAM_1%ET=ET
+        SPAM_1%EOP=EOP
+        SPAM_1%EVAP=EVAP
+        CALL PUT(SPAM_1)
 
 !***********************************************************************
 !***********************************************************************
@@ -635,7 +740,7 @@ C-----------------------------------------------------------------------
 ! CES         Cumulative evaporation (mm)
 ! CET         Cumulative evapotranspiration (mm)
 ! CLOUDS      Relative cloudiness factor (0-1) 
-! CO2         Atmospheric carbon dioxide concentration
+! DSAT_CO2         Atmospheric carbon dioxide concentration
 !              (µmol[CO2] / mol[air])
 ! CONTROL     Composite variable containing variables related to control 
 !               and/or timing of simulation.    See Appendix A. 

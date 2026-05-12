@@ -223,7 +223,7 @@ C-----------------------------------------------------------------------
 	IF(useSWAT)THEN
 	CALL interface_OPSUM(EXPER,CG,ENAME,TRTNUM,ROTNO,ROTOPT,CRPNO,
      &	TITLET,CROP,FLDNAM,WSTATION,SLNO)
-	write(*,*)'OPSUM'
+	!write(*,*)'OPSUM'
 	!EXPER
 	!CG
 	!ENAME
@@ -293,7 +293,7 @@ C-----------------------------------------------------------------------
 
       CLOSE (LUNIO)
 	END IF
-	write(*,*)'OPSUM,HERE'
+	!write(*,*)'OPSUM,HERE'
 C     Get unit number for SUMMARY.OUT file
       CALL GETLUN('OUTS', NOUTDS)
 
@@ -1147,4 +1147,3 @@ C-----------------------------------------------------------------------
       END SUBROUTINE EvaluateDat
 
 C=======================================================================
- 

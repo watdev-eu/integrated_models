@@ -199,7 +199,7 @@
             pdvr(ii) = pdvar(ipdvar(ii))
 !		write(*,*)'ii=',ii,'ipdvar=',ipdvar(ii)
           end do
-	write(*,*)'iscen=',iscen,'isproj=',isproj,'itotr=',itotr
+!	write(*,*)'iscen=',iscen,'isproj=',isproj,'itotr=',itotr
           if (iscen == 1 .and. isproj == 0) then
 !          write (*,*) j, subgis(j), mo_chk, rch_dakm(j),
  !    &                             ( pdvr(ii), ii = 1, itotr), iyr
@@ -230,6 +230,6 @@
       end do
 
       return
- 5000 format ('REACH ',i4,1x,i8,1x,i5,47e12.4,i6)
+ 5000 format ('REACH ',i4,1x,i8,1x,i5,21e12.4,i6)
  6000 format ('REACH ',i4,1x,i8,1x,i5,47e12.4,1x,i4)
       end

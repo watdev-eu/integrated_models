@@ -180,6 +180,7 @@
           !!if last day of month 
           if (i_mo /= mo_chk) then
             immo = immo + 1
+		IF(DSSAT_output_m)call interface_outputDSSAT(immo-1,.FALSE.)
           endif
 
           !! initialize variables at beginning of day
@@ -272,7 +273,10 @@
 	      endif
 	    
 	    endif
+	IF(DSSAT_output_d)CALL interface_OUTPUTDSSAT(i,.FALSE.)
         end do
+	IF(DSSAT_output_y)CALL interface_OUTPUTDSSAT(curyr,.FALSE.)
+
         !write(*,*)'after operatn,iida=',iida,'i=',i
 	    !! write daily and/or monthly output
           if (curyr > nyskip) then

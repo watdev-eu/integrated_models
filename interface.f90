@@ -5,7 +5,7 @@ USe ModuleData
 USE parm,ONLY:nhru
 IMPLICIT NONE
 LOGICAL::useDSSAT,origSWAT0,origSWAT1,origSWAT2,agro_forestry,origSWAT3,origSWAT4,origSWAT5
-LOGICAL::useSWAT=.TRUE.,useSWAT_M=.TRUE.
+LOGICAL::useSWAT=.TRUE.,useSWAT_M=.TRUE.,DSSAT_output_d=.FALSE.,DSSAT_output_m=.TRUE.,DSSAT_output_y=.FALSE.
 CHARACTER(5)::GropMODEL
 CHARACTER(len=2),allocatable,save::OLD_CROP(:)
 CHARACTER(len=4),allocatable,save::PLANT_SOURCE(:)
@@ -39,6 +39,43 @@ TYPE(FileType),SAVE::FILES(10)
 
 
 CONTAINS
+
+SUBROUTINE interface_outputDSSAT(day,FIRST)
+	use parm
+	IMPLICIT NONE
+	LOGICAL::FIRST
+	INTEGER::day,j	
+
+	
+	IF(FIRST)THEN
+         open(20001,file='output_dssat.plt')
+         write(20001,12223) 
+	ELSE
+	DO j=1,nhru
+	IF(PLANT_SOURCE(j)=='DSAT')THEN
+        write(*,*)'no FORMAT:',day, subnum(j), hruno(j),P_GROWTH(j)%TOTWT*10 ,P_GROWTH(j)%TOPWT*10,&
+        P_GROWTH(j)%STMWT*10,P_GROWTH(j)%SHELWT*10,P_GROWTH(j)%RTWT*10
+	write(*,*)'----------'
+	write(*,1000)day, subnum(j), hruno(j),P_GROWTH(j)%TOTWT*10 ,P_GROWTH(j)%TOPWT*10,&
+        P_GROWTH(j)%STMWT*10,P_GROWTH(j)%SHELWT*10,P_GROWTH(j)%RTWT*10
+
+   	write(20001,*) day, subnum(j), hruno(j),P_GROWTH(j)%TOTWT*10 ,P_GROWTH(j)%TOPWT*10,&
+	P_GROWTH(j)%STMWT*10,P_GROWTH(j)%SHELWT*10,P_GROWTH(j)%RTWT*10
+	END IF
+      END DO
+
+
+	END IF
+
+
+RETURN
+12223   format ('DAY',t15,'GISnum',t25,'TOTWT',t37,'TOPWT',t48,&            
+       'STMWT',t57,'SHELWT',t67,'RTWT'/,t26,&                    
+       '(kg/ha)',t35,'(kg/ha)',t45,&                                     
+       '(kg/ha)',t55,'(kg/ha)',t66,'(kg/ha)')
+1000	format (i4,a18,a5,5f10.2)
+     
+END SUBROUTINE interface_outputDSSAT
 
 SUBROUTINE interface_dormant
 USE parm
@@ -1306,8 +1343,8 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 	HARVFRAC=(/eff,0.0/)
 	PLANTING_DSSAT(interface_ihru)=0
 	yldkg(icr(interface_ihru),interface_ihru)=Plant_Interface%TOPWT*10+yldkg(icr(interface_ihru),interface_ihru)
-	yldanu(interface_ihru)=yldanu(interface_ihru)+Plant_Interface%TOPWT*10/1000
-	bio_yrms(interface_ihru)=bio_yrms(interface_ihru)+Plant_Interface%TOPWT/10/1000
+	yldanu(interface_ihru)=yldanu(interface_ihru)+Plant_Interface%TOPWT*10
+	bio_yrms(interface_ihru)=bio_yrms(interface_ihru)+Plant_Interface%TOPWT*10
 		
 	IF(PLANT_SOURCE(interface_ihru).EQ.'SWAT')THEN
 
@@ -1401,8 +1438,8 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 	
 
 	ELSE
-		yield=Plant_Interface%TOPWT*(1-HARVFRAC(1))
-		resnew=HARVFRAC(1)*Plant_Interface%TOPWT
+		yield=Plant_Interface%TOPWT*(1-HARVFRAC(1))*10
+		resnew=HARVFRAC(1)*Plant_Interface%TOPWT*10
 	        BLG1 = 0.01/0.10
                 BLG2 = 0.99
                 BLG3 = 0.10
@@ -1462,9 +1499,13 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
        wshd_yldn = wshd_yldn + yieldn * hru_dafr(interface_ihru)
        wshd_yldp = wshd_yldp + yieldp * hru_dafr(interface_ihru)
        yldkg(icr(interface_ihru),interface_ihru) = yldkg(icr(interface_ihru),interface_ihru) + yield
+	write(*,*)'interface, harvkillop,bio_mas=',bio_ms(interface_ihru)
+	
        bio_hv(icr(interface_ihru),interface_ihru) = bio_ms(interface_ihru) + bio_hv(icr(interface_ihru),interface_ihru)
-       yldanu(interface_ihru) = yldanu(interface_ihru) + yield / 1000.
-       bio_yrms(interface_ihru) = bio_yrms(interface_ihru) + bio_ms(interface_ihru) / 1000.
+	write(*,*) 'bio_hv=',bio_hv(icr(interface_ihru),interface_ihru)
+	!stop
+       yldanu(interface_ihru) = yldanu(interface_ihru) + yield 
+       bio_yrms(interface_ihru) = bio_yrms(interface_ihru) + bio_ms(interface_ihru)
        ncrops(icr(interface_ihru),interface_ihru) = ncrops(icr(interface_ihru),interface_ihru) + 1
       endif
 
@@ -1570,7 +1611,7 @@ ELSE IF(DYNAMIC.EQ.RATE)THEN
 
 
 
-      bio_hv(icr(j),j) = bio_ms(j) + bio_hv(icr(j),j)
+      bio_hv(icr(j),j) = bio_ms(j)*10 + bio_hv(icr(j),j)
 
 
 
@@ -2637,6 +2678,7 @@ DO ii=1,nhru
 	CONTROL_NEW(ii)%DYNAMIC=RATE
 	CALL GET(P_GROWTH(ii))
 	CALL GET(ToSwat)
+
 	!if(i==1)THEN
 	!write(*,*)'XLEAF=',P_GROWTH(i)%XLEAF
 	!write(*,*)'YLEAF',P_GROWTH(i)%YLEAF
@@ -2646,6 +2688,7 @@ END DO
 
 
 END IF
+CALL interface_OUTPUTDSSAT(0,.TRUE.)
 write(*,*)'interface_begin, OHI'
 RETURN	
 	!ISWITCH%IPLTI= ! Panting switch 	
@@ -2692,7 +2735,7 @@ CHARACTER(len=80)::APU1,APU2
 
 !write(*,*)'inside interface_SPECIESdata1P'
 
-APU1=TRIM('/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/')
+APU1=TRIM('/mnt/modeller3/WATDEV/TOOLBOX/SourceCode_dssat-csm-os-master_v4.8/Data/Genotype/')
 PATHout=APU1
 !write(*,*)'PATHout:',PATHout
 RETURN
@@ -3108,7 +3151,7 @@ albday=SOILPROP%SALB
 sol_st(interface_ihru,:)=LAND_C%ST
 
 ! g/m^2 =10000 g/ha =10 kg/ha = 0.01 ton/ha
-if(PLANT_SOURCE(interface_ihru).EQ.'DSAT')bio_ms(ihru)=PlantI%TOPWT*0.01   
+if(PLANT_SOURCE(interface_ihru).EQ.'DSAT')bio_ms(ihru)=PlantI%TOTWT*10   
 
 ORIGINAL_DSSAT(interface_ihru,1,2)=PlantI%TOPWT
 ORIGINAL_DSSAT(interface_ihru,2,2)=PlantI%WTNCAN
@@ -3131,7 +3174,7 @@ IF(yr_skip(interface_ihru)==1)PLANTING_DSSAT(interface_ihru)=17
 !write(*,*)'interface_LAND,yldanu=',yldanu(interface_ihru),'ihru=',ihru,'SOURCE=',PLANT_SOURCE(interface_ihru)
 
 LAND_NEW(interface_ihru)=LAND_C
-
+!CALL interface_OUTDSSAT(DAS,.FALSE.)
 !if(bio_yrms(interface))
 !write(*,*)'bio_yrms=',bio_yrms(interface_ihru)
 

@@ -224,9 +224,9 @@ C      Compute temperature and soil water effects for phase 1, emergence
 C-----------------------------------------------------------------------
 
         FT(1) = CURV(CTMP(1),TB(K),TO1(K),TO2(K),TM(K),TSDEP)
-	write(*,*)'FT(1)=',FT(1),'CTMP(1)=',CTMP(1),'TB(K)=',
-     & TB(K),'TO1(K)=',TO1(K),'TO2(K)=',TO2(K),'TM=',TM(K),
-     & 'TSDEP=',TSDEP,'K=',K
+!	write(*,*)'FT(1)=',FT(1),'CTMP(1)=',CTMP(1),'TB(K)=',
+!     & TB(K),'TO1(K)=',TO1(K),'TO2(K)=',TO2(K),'TM=',TM(K),
+!    & 'TSDEP=',TSDEP,'K=',K
         IF (ISWWAT .EQ. 'Y') THEN
           SWFEM = (SWFEM / 10.) * 100.0
           FSW(1) = CURV('LIN',0.0,20.0,100.,1000.,SWFEM)

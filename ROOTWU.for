@@ -133,9 +133,9 @@ C-----------------------------------------------------------------------
 	CALL GET(LAND_C)
 	RWU=LAND_C%RWU
 	TRWUP=LAND_C%TRWUP
-	IF(interface_ihru==40)THEN
-		write(*,*)'ROOTWU:RWU(40)=',RWU,'ihru=',interface_ihru
-	END IF
+	!IF(interface_ihru==40)THEN
+!		write(*,*)'ROOTWU:RWU(40)=',RWU,'ihru=',interface_ihru
+!	END IF
 	END IF
 	end if
 !***********************************************************************

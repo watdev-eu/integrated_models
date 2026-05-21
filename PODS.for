@@ -477,6 +477,10 @@
         ENDIF
         IF (YRDOY .GT. YRNR2 .AND. YRNR2 .GT. 0) THEN
           NR2TIM = MAX(TIMDIF(YRNR2,YRDOY),0)
+	IF(YRNR2.EQ.1998001)THEN
+	write(*,*)'NR2TIM=',NR2TIM,'CROP=',CONTROL%CROP
+	STOP
+	END IF
 !-----------------------------------------------------------------------
 !     Remember yesterdays mature shell weight, WTSHMY
 !-----------------------------------------------------------------------

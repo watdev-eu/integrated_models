@@ -208,7 +208,7 @@
           end do
 
           if (iscen == 1 .and. isproj == 0) then
-          write (7,5000) j, subgis(j), years, rch_dakm(j),              
+          write (7,6000) j, subgis(j), years, rch_dakm(j), ! 5000 =>6000             
      &                                    (pdvr(ii), ii = 1, itotr), j
           else if (isproj == 1) then
           write (20,5000) j, subgis(j), years, rch_dakm(j),             

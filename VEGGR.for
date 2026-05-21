@@ -173,7 +173,7 @@ C========================================================================
      &    CANHT, CANWH)                                   !Output
 	PlantG4%CANHT=CANHT
 	PlantG4%CANWH=CANWH
-!	write(*,*)'VEGGR,PROSTI=',PROSTI
+
 	CALL PUT(PlantG4)
 !***********************************************************************
 !***********************************************************************
@@ -254,9 +254,9 @@ C========================================================================
 	PROLFG=PlantG4%PROLFG
 	PRORTG=PlantG4%PRORTG
 	PROSTG=PlantG4%PROSTG
-!	write(*,*)'PROLFG=',PROLFG
-!	write(*,*)'PRORTG=',PRORTG
-!	write(*,*)'PROSTG=',PROSTG
+
+
+
 	
       FNINLG = PROLFG * 0.16   
       FNINRG = PRORTG * 0.16   
@@ -279,8 +279,8 @@ C========================================================================
 !     DAILY RATE/INTEGRATION
 !***********************************************************************
       ELSEIF (DYNAMIC .EQ. INTEGR) THEN
-!	write(*,*)'VEGGR,TURFAC=',TURFAC,'i.e., water stress'
-!	write(*,*)'VEGGR,NSTRESS',NSTRES,'i.e,Nitrogen stress'
+
+
 	CALL GET(PlantG4)
 	FNINLG=PlantG4%FNINLG
 	FNINRG=PlantG4%FNINRG
@@ -307,8 +307,7 @@ C-----------------------------------------------------------------------
       ENDIF
 	ATOP=PlantG4%ATOP
 	PStres2=PlantG4%PStres2
-!	write(*,*)'ATOP=',ATOP,'NSTRES=',NSTRES,'PStres2=',PStres2
-!	write(*,*)'FRRT=',FRRT
+
 !      FRRT  = ATOP * (1.0 - (MIN(TURFAC,NSTRES)))*(1.0-FRRT) + FRRT
       FRRT  = ATOP * (1.0 - (MIN(TURFAC, NSTRES, PStres2))) * 
      &                    (1.0 - FRRT) + FRRT
@@ -328,7 +327,7 @@ C-----------------------------------------------------------------------
 C     0.6 IS A SCALAR, COULD BE LESS, was once 0.8 and 0.7
 C     0.7 appears to be too much for peanut, but not for soybean.
 C-----------------------------------------------------------------------
-	
+		
       FRLF  = (1.0 + 0.6*(1.0-CUMTUR))*(1.-FRRT)*FRLF/(FRLF + FRSTM)
       FRLF = MIN(FRLF, 0.90*(1. - FRRT))
       FRSTM = 1.0 - FRRT - FRLF
@@ -351,8 +350,10 @@ C-----------------------------------------------------------------------
       WLDOTN = FRLF * VGRDEM
       WSDOTN = FRSTM * VGRDEM
       WRDOTN = FRRT * VGRDEM
-!	write(*,*)'VEGGR'
+
 !      write(*,*)'VEGGR:LEAVES:WLDOTN=',WLDOTN,'FRLF=',FRLF!
+!	write(*,*)'PGAVL=',PGAVL
+!	write(*,*)'----VEGGR---------------------------------------'
 !	write(*,*)'STEM WSDOTN=',WSDOTN,'FRSTM=',FRSTM
 !	write(*,*)'ROOTS WRDOTN=',WRDOTN,'FRRT=',FRRT
 !	write(*,*)'PGAVL=',PGAVL,'AGRVG=',AGRVG,'VGRDEM=',VGRDEM

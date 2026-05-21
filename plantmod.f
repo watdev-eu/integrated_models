@@ -69,7 +69,7 @@
       if (igro(j) == 1) call swu
  	IF(j==40)THEN
 	CALL GET(LAND_C)
-	write(*,*)'plantmod,RWU=',LAND_C%RWU
+	!write(*,*)'plantmod,RWU=',LAND_C%RWU
 	END IF
       if (igro(j) == 1) call grow
 !     write (99,9994) i, hru_ra(j), bio_ms(j), laiday(j),

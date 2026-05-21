@@ -805,7 +805,7 @@ C	!	write(*,*)'IRRAMT_DSSAT=',IRRAMT_DSSAT
 	call put(land_c)
 	call interface_plant
 	CALL GET(LAND_C)
-	IF(interface_ihru==40)write(*,*)'LAND,RWU=',LAND_C%RWU
+	!IF(interface_ihru==40)write(*,*)'LAND,RWU=',LAND_C%RWU
 	
 	END IF
 !      ENDIF
@@ -956,7 +956,7 @@ C-----------------------------------------------------------------------
 	call put(LAND_C)
 	CALL interface_plant
 	CALL GET(LAND_C)
-	IF(interface_ihru==40)write(*,*)'LAND:INTEGR,RWU=',LAND_C%RWU
+	!IF(interface_ihru==40)write(*,*)'LAND:INTEGR,RWU=',LAND_C%RWU
 	END IF
      
 	

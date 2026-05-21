@@ -88,9 +88,9 @@
       irrsc(j) = irr_sca(j)
       irrno(j) = irr_noa(j)
 !!!! Srin's irrigation source by each application changes
-	write(*,*)'auto_irr,wstrs_id=',wstrs_id(j)
-	write(*,*)strsw(j),'<',auto_wstr(j),irrsc(j)
-	write(*,*)'sol_sumfc=',sol_sumfc(j)
+!	write(*,*)'auto_irr,wstrs_id=',wstrs_id(j)
+!	write(*,*)strsw(j),'<',auto_wstr(j),irrsc(j)
+!	write(*,*)'sol_sumfc=',sol_sumfc(j)
       if ((wstrs_id(j) == 1 .and. strsw(j) < auto_wstr(j) .or.          
      & (wstrs_id(j)==2.and.sol_sumfc(j)-sol_sw(j)>auto_wstr(j)))) then  
         !! determine available amount of water in source

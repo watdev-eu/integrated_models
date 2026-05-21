@@ -245,7 +245,7 @@ C
 C-----------------------------------------------------------------------
 C       Emergence, next stage, occurs on day DAS
 C-----------------------------------------------------------------------
-	  write(*,*)'RSTAGES,EMERGGENSE'
+!	  write(*,*)'RSTAGES,EMERGGENSE'
           NVEG0 = DAS
           NVALPH(2) = NVEG0
           YREMRG    = YRDOY

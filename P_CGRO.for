@@ -92,7 +92,7 @@
 
 !***********************************************************************
       IF (DYNAMIC == SEASINIT) THEN
-	write(*,*)'P_GRO,TO RootSOilVol'
+	
         IF (CROP /= 'FA') THEN
 !         Soil phosphorus routine needs volume of soil adjacent to roots.
           CALL RootSoilVol(DYNAMIC, ISWPHO,    
@@ -102,8 +102,7 @@
         ELSE
           FracRts = 0.0
         ENDIF
-	write(*,*)'P_CGRO:From RootSoilVol'
-        Leaf_kg = 0.0
+	Leaf_kg = 0.0
         Stem_kg = 0.0
         Root_kg = 0.0
         Shel_kg = 0.0

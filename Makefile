@@ -41,6 +41,8 @@ EVENT.DIR := ../event/
 LIB.DIR = lib/
 BIN.DIR = bin/
 RUN.DIR=/modeller3/WATDEV/TOOLBOX/model/TxtInOut/
+#RUN2.DIR=/modeller3/WATDEV/TOOLBOX/KOGA/NEW2/TxtInOut/
+#RUN3.DIR=/modeller3/WATDEV/TOOLBOX/EGYPT/NEW3/TxtInOut/TxtInOut/
 EVENT.DLL = libevent.so
 FFLAGS = -fno-underscoring -fPIC $(deb) #ORIGINAL
 #FFLAGS = -O0 -ggdb -ffpe-trap=invalid,zero,overflow -fbounds-check -fimplicit-none

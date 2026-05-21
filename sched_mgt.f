@@ -34,8 +34,8 @@
 	USE interface2
       j = ihru
 	if(PLANT_SOURCE(j)=='DSAT')THEN
-	write(*,*)'mgtop=',mgtop(:,j),'no=',nop(j)
-	write(*,*)mgtop(nop(j),j)
+!	write(*,*)'mgtop=',mgtop(:,j),'no=',nop(j)
+!	write(*,*)mgtop(nop(j),j)
 !	STOP
 	END IF      
       select case (mgtop(nop(j),j))
@@ -61,12 +61,12 @@
             if (mgt4op(nop(j),j) < 700.) mgt4op(nop(j),j) = 1700.
 !            if (mgt4op(nop(j),j) > 5000.) mgt4op(nop(j),j) = 5000.
             phu_plt(j) = mgt4op(nop(j),j)
-		write(*,*)'useDSSAT=',useDSSAT
+	!	write(*,*)'useDSSAT=',useDSSAT
 	if(useDSSAT)THEN
                 IF(PLANT_SOURCE(j).NE.'SWAT')THEN
                     PLANTING_DSSAT(j)=1
-			write(*,*)'Planting DSAT,iida=',iida,'ihru=',ihru
-			stop
+		!	write(*,*)'Planting DSAT,iida=',iida,'ihru=',ihru
+		!	stop
 		ELSE
             		call plantop 
 		END IF
@@ -83,7 +83,7 @@
 
  
           case (2)  !! irrigation operation
-	write(*,*)'IRRIGATION'
+!	write(*,*)'IRRIGATION'
 	!STOP
 	PLANTING_DSSAT(j)=2
             irr_sc(ihru) = mgt2iop(nop(j),j) !source of irrigation water
@@ -153,7 +153,7 @@
             endif
      
           case (5)   !! harvest and kill operation
-	write(*,*)'useDSSAT=',useDSSAT
+	!write(*,*)'useDSSAT=',useDSSAT
 		IF(PLANT_SOURCE(j)=='DSAT')PLANTING_DSSAT(j)=5
 		
             cnop = mgt4op(nop(j),j)
@@ -162,15 +162,15 @@
             biomass = bio_ms(j)
 	        !write(*,*)'sched_mgt,MDATE=',MDATE_interface(j),'ihru=',j
 		!write(*,*)'iida=',iida
-	write(*,*)'useDSSAT=',useDSSAT
+	!write(*,*)'useDSSAT=',useDSSAT
  		IF(PLANT_SOURCE(j)=='DSAT')THEN
 	call interface_harvkillop(iida)    
-	write(*,*)'sched_mgt,MDATE=',MDATE_interface(j),'ihru=',j 
+	!write(*,*)'sched_mgt,MDATE=',MDATE_interface(j),'ihru=',j 
 	!STOP      
 	else
             call harvkillop
-	write(*,*)'sched_mgt,harvkillop,SWAT,MDATE='
-	write(*,*),MDATE_interface(j),'ihru=',j
+	!write(*,*)'sched_mgt,harvkillop,SWAT,MDATE='
+	!write(*,*),MDATE_interface(j),'ihru=',j
 	!STOP	
 	END IF       
 !		write(*,*)'harv kill op, ihru',j,'day=',iida
@@ -191,11 +191,12 @@
             phuacc(j) = 0.
             
           case (6)   !! tillage operation
-	write(*,*)'Tillage'
+	!write(*,*)'Tillage'
 	
             idtill = mgt1iop(nop(j),j)
             cnop = mgt4op(nop(j),j)
-	write(*,*)'useDSSAT=',useDSSAT
+	!write(*,*)'useDSSAT=',useDSSAT
+	useDSSAT=.TRUE.	
             IF(useDSSAT)THEN
 !            call newtillmix(j,0.)
     		PLANTING_DSSAT(j)=6
@@ -218,16 +219,16 @@
             hi_rsd = mgt6op(nop(j),j)
             harveff = mgt4op(nop(j),j)
             if (harveff <= 0.) harveff = 1.0
-	write(*,*)'iida=',iida 
+	!write(*,*)'iida=',iida 
 
 	IF(PLANT_SOURCE(j)=='DSAT')THEN
             call interface_harvestop(iida)
 	PLANTING_DSSAT(j)=7
-	write(*,*)'harvest,DSSAT'
+	!write(*,*)'harvest,DSSAT'
 	!STOP
 	ELSE
 		call harvestop
-		write(*,*)'harvest op,SWAT'
+	!	write(*,*)'harvest op,SWAT'
 		!STOP	
 	END IF
             if (imgt == 1) then
@@ -245,11 +246,11 @@
 	IF(PLANT_SOURCE(j)=='DSAT')THEN
 		call interface_killop(iida)
 	   PLANTING_DSSAT(j)=8
-	write(*,*)'killop,DSSAT'
+	!write(*,*)'killop,DSSAT'
 	STOP
 	ELSE
             call killop
-		write(*,*)'killop,swat'
+	!	write(*,*)'killop,swat'
 	!STOP
 	END IF
   		
@@ -294,7 +295,7 @@
             end if
           
           case (10)   !! auto irrigation operation
-	write(*,*)'Automatic irrigation','ihru=',j,'P_SOURCE=',PLANT_SOURCE(j)
+	!write(*,*)'Automatic irrigation','ihru=',j,'P_SOURCE=',PLANT_SOURCE(j)
 
 	IF(useDSSAT)		PLANTING_DSSAT(j)=10 
             wstrs_id(j) = mgt1iop(nop(j),j)

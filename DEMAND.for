@@ -113,7 +113,7 @@ C=======================================================================
 
       TYPE (ControlType) CONTROL
 	TYPE(PLANT_GROWTH) PlantG2
-	!write(*,*)'INSIDE,DEMAND,NDLEAF=',NDLEAF
+	
 !***********************************************************************
 !***********************************************************************
 !     Run Initialization - Called once per simulation
@@ -134,9 +134,7 @@ C=======================================================================
      &  XFRUIT, XLEAF, XSLATM, XTRFAC, XVGROW, XXFTEM,    !Output
      &  YLEAF, YSLATM, YSTEM, YTRFAC, YVREF, YXFTEM)      !Output
 	
-	!write(*,*)'YLEAF=',YLEAF
-	!write(*,*)'XLEAF=',XLEAF
-	!write(*,*)'interface_ihru=',interface_ihru
+	
 
 	CALL GET(PlantG2)
 	PlantG2%YXFTEM=YXFTEM !
@@ -190,8 +188,8 @@ C=======================================================================
 	PlantG2%RCH2O=RCH2O
 	
 	CALL PUT(PlantG2)
-	!CALL GET(PlantG2)
-	!write(*,*)'PlantG2%XLEAF=',PlantG%XLEAF
+	
+	
 	
 !***********************************************************************
 !***********************************************************************
@@ -237,7 +235,7 @@ C=======================================================================
 !-----------------------------------------------------------------------
 !     SET VARIETY SPECIFIC LEAF PARAMETERS
 !-----------------------------------------------------------------------
-	!write(*,*)'SLAVAR=',SLAVAR
+	
 	SLAVAR=PlantG2%SLAVAR
 	SLAREF=PlantG2%SLAREF
 	XLEAF=PlantG2%XLEAF
@@ -257,11 +255,7 @@ C=======================================================================
         DO I = 1,6
           YVGROW(I) = SIZRAT * YVREF(I)
         ENDDO
-	!write(*,*)'SLAVAR=',SLAVAR,'SLAREF=',SLAREF
-	!write(*,*)'F=',F,'DUMFAC=',DUMFAC,'FINREF=',FINREF
-	!write(*,*)'interface_ihru=',interface_ihru
-	!write(*,*)'XLEAF=',XLEAF
-	!write(*,*)'YLEAF=',YLEAF
+	
 	
 !-----------------------------------------------------------------------
 !     INITIALIZE PARTITIONING PARAMETERS
@@ -386,11 +380,8 @@ C=======================================================================
 	YTRFAC=PlantG2%YTRFAC
 	YVREF=PlantG2%YVREF
 	YXFTEM=PlantG2%YXFTEM	
-	!write(*,*)'XLEAF=',XLEAF
-	!write(*,*)'YLEAF=',YLEAF
-
-	!write(*,*)'DEMAND,INTEG,NDLEAF=',NDLEAF,'FRLF=',FRLF
-	!STOP
+	
+	
 !-----------------------------------------------------------------------
 !     DAS = MAX(0,TIMDIF(YRSIM,YRDOY))
       CALL GET(CONTROL)
@@ -645,11 +636,12 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
 !-----------------------------------------------------------------------
 !     Check to See if New Vegetative Tissue Can Be Grown, Using PGAVL
 !-----------------------------------------------------------------------
-	!write(*,*)'DEMAND,XFRT=',XFRT,'PGAVL=',PGAVL,'CDMREP=',CDMREP	
+		
+      
       CDMVEG = MAX(0.0,(1.-XFRT)*PGAVL)
       NDMVEG = 0.0
       CDMVEG = (PGAVL * XFRT - CDMREP) + CDMVEG
-
+	
 !-----------------------------------------------------------------------
 !       This is from documentation:  check no longer needed?? chp
 !-----------------------------------------------------------------------
@@ -660,7 +652,7 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
-      !write(*,*)'DEMAND,NDLEAF',NDLEAF,'FRLF=',FRLF
+      
       IF (DAS .EQ. NR1) THEN
 !-----------------------------------------------------------------------
 !     Fraction of growth going to leaves and roots decreases
@@ -676,7 +668,7 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
 !-----------------------------------------------------------------------
 !     Calculate Pattern of Vegetative Partitioning, a function of V-STAGE
 !-----------------------------------------------------------------------
-	!write(*,*)'DEMAND:YLEAF=',YLEAF,'XLEAF=',XLEAF,'VSTAGE=',VSTAGE
+	
         FRLF  = TABEX(YLEAF,XLEAF,VSTAGE,8)
         FRSTM = TABEX(YSTEM,XLEAF,VSTAGE,8)
       ELSE
@@ -685,7 +677,7 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
 !     as expressed by FRACDN, the relative development between R1 and NDLEAF
 !-----------------------------------------------------------------------
         FRLF = FRLFM - YY * FRACDN
-	!write(*,*)'DEMAN,INTEG,FRLF=',FRLF
+	
         FRSTM = FRSTMM - XX * FRACDN
         IF ( DAS .GE. NDLEAF) THEN
           FRLF = FRLFF
@@ -693,8 +685,8 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
         ENDIF
 
       ENDIF
-      !write(*,*)'DEMAN,INTEG,FRLF=',FRLF,'DAS=',DAS,'NR1=',NR1
-      !write(*,*)'NDLEAF=',NDLEAF
+      
+      
 
 !     This is where to modify partitioning for extra root growth:
 !     check units!!! fraction vs percentage
@@ -737,20 +729,18 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
 !     restricted so that F is maintained as computed and minimal amounts
 !     of C is partitioned to FRSTM and FRRT  (JWJ 4/1/96)
 !-----------------------------------------------------------------------
-	!write(*,*)'DEMAND1,VSTAGE=',VSTAGE,'VSSINK=',VSSINK
-	!write(*,*)'YVGROW=',YVGROW,'XVGROW=',XVGROW,'SIZELF=',SIZELF
-	!write(*,*)'SIZREF=',SIZREF
+	
       IF (VSTAGE .LT. VSSINK) THEN
         GROYES = GROMAX
-	!write(*,*)'TABEX=',TABEX(YVGROW,XVGROW,VSTAGE,6) 
+	 
         GROMAX = TABEX(YVGROW,XVGROW,VSTAGE,6) * SIZELF/SIZREF
         GAINNW = (GROMAX - GROYES) * PLTPOP
-	!write(*,*)'GROMAX=',GROMAX,'GROYES=',GROYES,'PLTPOP=',PLTPOP
+	
 !-----------------------------------------------------------------------
 !     CALCULATE MINIMUM WEIGHT NEEDED TO ADD GAINNW LEAF AREA/M2,
 !     AND AMOUNT OF LEAF WEIGHT WHICH CAN BE GROWN WITH PG AVAILABLE
 !-----------------------------------------------------------------------
-	!write(*,*)'F=',F,'GAINNW=',GAINNW
+	
         IF (F .GT. 1.E-5) THEN
           GAINWT = GAINNW/F
         ELSE
@@ -760,14 +750,14 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
 !     Compute fraction of C partitioned to leaves, based on F, VSSINK
 !     Limit leaf pertitioning to FRLFMX (i.e., FRLFMX = 0.7)
 !-----------------------------------------------------------------------
-	!write(*,*)'DEMAND,AGRLF=',AGRLF,'GAINWT=',GAINWT,'CDMVEG=',CDMVEG
+	
         FRLF = (AGRLF*GAINWT)/(CDMVEG + 0.0001)
         IF (FRLF .GT. FRLFMX) THEN
           GAINWT = (CDMVEG/AGRLF) * FRLFMX
           GAINNW = GAINWT * F
           FRLF = FRLFMX
         ENDIF
-	!write(*,*)'DEMANF,FRLF=',FRLF,'FRLFMX=',FRLFMX
+	
 !-----------------------------------------------------------------------
 !     Recompute FRSTM and FRRT based on FRLF
 !-----------------------------------------------------------------------
@@ -937,7 +927,7 @@ C 24 changed to TS by Bruce Kimball on 3Jul17
       CLOSE (LUNIO)
 	END IF	
 
-	!write(*,*)'DEMAND, FILECC=',FILECC
+	
 !-----------------------------------------------------------------------
 !     Read in values from species file
 !-----------------------------------------------------------------------

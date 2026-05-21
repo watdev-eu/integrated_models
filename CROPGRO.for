@@ -2358,8 +2358,6 @@ C-----------------------------------------------------------------------
 	PCNRT=PlantF%PCNRT
 	PCNST=PlantF%PCNST
 	PGAVL=PlantF%PGAVL
-	write(*,*)'CROPGROW,PGAVL=',PGAVL
-	write(*,*)'PGPGPGPGPGPGPGPGPGPGPGPGPGPGPGPG'
 	PUNCSD=PlantF%PUNCSD
 	PUNCTR=PlantF%PUNCTR
 	PLTPOP=PlantF%PLTPOP
@@ -3306,8 +3304,8 @@ C-----------------------------------------------------------------------
 		!write(*,*)'----------------------------------------------'
 		!write(*,*)'*                                             '
 		!write(*,*)'*                                             '
-		write(*,*)'*  PUUTE RAVINTEISTA                          '
-		write(*,*)'DAS=',DAS,'ihru=',interface_ihru,'CROP=',CROP	
+		!write(*,*)'*  PUUTE RAVINTEISTA                          '
+		!write(*,*)'DAS=',DAS,'ihru=',interface_ihru,'CROP=',CROP	
 		!STOP
 	END IF
 	

@@ -158,7 +158,7 @@
         ES_LYR(L) = -SWDELTU(L) * DLAYR(L) * 10.      !mm
         ES = ES + ES_LYR(L)                           !profile sum (mm)
       ENDDO
-
+!	write(*,*)'ESR_SOilEvap, ES_LYR=',ES_LYR
 !     Limit total profile soil evaporation to potential soil evaporation
       RedFac = 1.0
       If (ES > EOS) Then

@@ -204,7 +204,7 @@
 !          write (*,*) j, subgis(j), mo_chk, rch_dakm(j),
  !    &                             ( pdvr(ii), ii = 1, itotr), iyr
 
-          write (7,5000) j, subgis(j), mo_chk, rch_dakm(j),           
+          write (7,6000) j, subgis(j), mo_chk, rch_dakm(j), !5000 changes to 6000          
      &                             ( pdvr(ii), ii = 1, itotr),iyr
           else if (isproj == 1) then
           write (20,5000) j, subgis(j), mo_chk, rch_dakm(j),            
@@ -230,6 +230,6 @@
       end do
 
       return
- 5000 format ('REACH ',i4,1x,i8,1x,i5,21e12.4,i6)
+ 5000 format ('REACH ',i4,1x,i8,1x,i5,21e12.4,i6) ! WAS 21
  6000 format ('REACH ',i4,1x,i8,1x,i5,47e12.4,1x,i4)
       end

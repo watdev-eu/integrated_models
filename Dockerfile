@@ -16,19 +16,14 @@ RUN set -eux; \
 
 RUN set -eux; \
     # clone local repository (to keep the sym links operational) 
-    git clone -b main https://github.com/watdev-eu/integrated_models ${MODDIR}; \
-    # requires specific version compatible with swat
-    git clone --depth 1 -b ${DSSAT_VERSION} https://github.com/DSSAT/dssat-csm-os.git ${MODDIR}/SourceCode_dssat-csm-os-master_v4.8; \
-    # use forked fixed version (until PR lands)
-    git clone --depth 1 -b ubuntu-compat https://github.com/pvgenuchten/SWAT-MODFLOW3 /tmp/swat; \
-    mv /tmp/swat/src "${MODDIR}/SourceCodeSM_V3"; \
+    git clone -b janne-full-dump https://github.com/watdev-eu/integrated_models ${MODDIR}; \
     # prepare bin output folder
     mkdir -p "${MODDIR}/bin"; \
     # initialise error file
-    echo "" > "${MODDIR}/bin/MODEL.ERR"; \
+    # echo "" > "${MODDIR}/bin/MODEL.ERR"; \
     # resolve name conflict 
-    sed -i -e 's/albedo/albedo_swat/g' "${MODDIR}/SWAT/albedo.f";  \ 
-    rm -Rf /tmp/swat;   
+    # sed -i -e 's/albedo/albedo_swat/g' "${MODDIR}/SWAT/albedo.f";  \ 
+    # rm -Rf /tmp/swat;   
 
 ENV PATH="/modeller3/WATDEV/TOOLBOX/bin/:${PATH}"
 

@@ -1,0 +1,11 @@
+MODULE interface
+
+SUBROUTINE plant_inityr
+! Purpose read yearly initial values for plants. 
+IMPLICIT NONE
+use parm
+use DDSAT_DATA
+
+CALL XXXX
+END SUBROUTINE plant_inityr 
+END MODULE interface

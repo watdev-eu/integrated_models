@@ -16,9 +16,9 @@ RUN set -eux; \
 
 RUN set -eux; \
     # clone local repository (to keep the sym links operational) 
-    git clone -b janne-full-dump https://github.com/watdev-eu/integrated_models ${MODDIR}; \
+    git clone -b "janne-full-dump" https://github.com/watdev-eu/integrated_models ${MODDIR}; \
     # prepare bin output folder
-    mkdir -p "${MODDIR}/bin"; \
+    mkdir -p "${MODDIR}/bin"; 
     # initialise error file
     # echo "" > "${MODDIR}/bin/MODEL.ERR"; \
     # resolve name conflict 
@@ -29,11 +29,11 @@ ENV PATH="/modeller3/WATDEV/TOOLBOX/bin/:${PATH}"
 
 WORKDIR ${MODDIR}
 
-RUN make swat 
+#RUN make swat 
 
-RUN set -eux; \
-    mkdir -p "/model";
+#RUN set -eux; \
+#    mkdir -p "/model";
 
-WORKDIR /model
+#WORKDIR /model
 
 CMD ["/bin/bash"]
